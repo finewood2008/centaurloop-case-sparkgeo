@@ -44,7 +44,7 @@ export function SparkShell() {
       </header>
 
       {/* Main workspace */}
-      <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_360px] overflow-hidden">
+      <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_420px] overflow-hidden">
         <div className="min-w-0 overflow-hidden">
           <ChatPanel
             onOpenPublisher={setPublisherCycleId}

@@ -293,7 +293,12 @@ export async function advanceLoop(
       for (const candidate of freshCycle.memoryCandidates) {
         if (candidate.status === 'confirmed') {
           try {
-            await storeAgentMemory(freshCycle.employeeId, candidate.content, candidate.category);
+            await storeAgentMemory(freshCycle.employeeId, candidate.content, candidate.category, {
+              scope: 'cycle',
+              sourceCycleId: freshCycle.id,
+              sourceTitle: `第 ${freshCycle.cycleNumber} 轮复盘`,
+              tags: ['本轮复盘', freshCycle.goal],
+            });
           } catch {
             // 写入失败不中断
           }

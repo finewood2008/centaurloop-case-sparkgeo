@@ -14,7 +14,7 @@ This repository is intentionally built as a complete product prototype rather th
 - **Publishing workspace**: generated drafts are routed into an internal article publishing page for formatting review, copy, and publish confirmation.
 - **Article image assist**: the publishing page can generate a cover preview and image prompt from the article and workspace image settings.
 - **AI feedback crawling**: after publishing, the user pastes article links and the system reads public pages to analyze performance signals.
-- **Live memory workspace**: brand profile, imported web pages, uploaded documents, and approved lessons stay visible beside the conversation.
+- **Live memory workspace**: current-cycle signals, a wiki-style long-term memory graph, and the editable company profile stay visible beside the conversation.
 - **Workspace settings**: platform selection, UI/output language, writing style, CTA style, emoji level, image model, and image style are configurable.
 - **Runtime flexibility**: supports built-in demo mode, OpenAI-compatible endpoints, Ollama, and LM Studio-style local servers.
 
@@ -45,7 +45,7 @@ flowchart LR
 | Draft cards | Shows generated content with formatted Markdown preview and copy actions. |
 | Publishing page | Lets users review generated content, copy it, and mark each item as published. |
 | Feedback form | Accepts published article URLs and runs AI-powered feedback extraction. |
-| Memory workspace | A right-side live panel for brand profile, current-loop memory, web import, PDF/TXT import, and all stored memories. |
+| Memory workspace | A right-side live panel ordered by current-cycle memory, all-memory wiki graph, then company profile editing and imports. |
 | Runtime center | Shows whether the app is running in demo mode or a real model runtime. |
 
 ## Architecture
@@ -71,6 +71,8 @@ Key design boundary:
 - `spark/` contains SparkGEO-specific brand and feedback services.
 
 More detail is available in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+Upgrade notes are tracked in [docs/UPGRADE_NOTES.md](docs/UPGRADE_NOTES.md).
 
 ## Tech Stack
 
@@ -142,7 +144,7 @@ You can also configure model credentials inside the app settings panel. The app 
 
 There are two crawling-related paths:
 
-- **Brand website extraction**: optional Firecrawl integration in Settings. It is not part of first-run onboarding because users may not have a Firecrawl key yet.
+- **Company profile enrichment**: optional Firecrawl-powered website extraction, plain URL reading, and PDF/TXT uploads live inside the Memory workspace company profile tab. First-run onboarding does not ask for Firecrawl because users may not have a key yet.
 - **Published article feedback**: after manual publishing, users paste public article URLs. The app fetches readable page text through the local Vite API and asks AI to extract public metrics or qualitative feedback signals.
 
 The app does not automate publishing to third-party platforms. It intentionally keeps publishing as a human step for this case project.
@@ -190,7 +192,7 @@ SparkGEO 是 **CentaurLoop** 的第一个公开案例项目：一个人机协同
 - **AI 抓取反馈**：发布后用户粘贴文章链接，系统读取公开页面并由 AI 提炼表现信号。
 - **品牌记忆**：品牌档案和偏好会存入记忆，并注入后续规划与生成。
 - **文章配图辅助**：发布页可以根据文章和图片设置生成封面预览与图片提示词。
-- **实时记忆工作区**：品牌档案、网页导入、文档上传和复盘经验会常驻显示在对话右侧。
+- **实时记忆工作区**：本轮动态记忆、长期记忆 wiki 关系图、企业档案编辑和资料导入会常驻显示在对话右侧。
 - **工作台设置**：可配置发布平台、界面/输出语言、语言风格、CTA、Emoji、图片模型和图片风格。
 - **灵活运行时**：支持内置 demo 模式、OpenAI-compatible 接口、Ollama、LM Studio 本地服务。
 
@@ -221,7 +223,7 @@ flowchart LR
 | 草稿卡片 | 展示 Markdown 排版预览和复制操作。 |
 | 文章发布页 | 检查生成内容、复制正文、逐篇标记发布。 |
 | 反馈表单 | 粘贴已发布文章 URL，由 AI 抓取并分析反馈。 |
-| 记忆工作区 | 常驻右侧，展示企业档案、本轮记忆、网页导入、PDF/TXT 导入和全部长期记忆。 |
+| 记忆工作区 | 常驻右侧，按本轮动态记忆、全部记忆 wiki 图谱、企业档案编辑与导入三个层级组织。 |
 | Runtime 中心 | 显示当前使用 demo 模式还是真实模型运行时。 |
 
 ## 架构
@@ -247,6 +249,8 @@ src/
 - `spark/` 放 SparkGEO 特有的品牌和反馈服务。
 
 更多说明见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
+
+升级说明见 [docs/UPGRADE_NOTES.md](docs/UPGRADE_NOTES.md)。
 
 ## 技术栈
 
@@ -318,7 +322,7 @@ SPARK_MODEL_NAME=gpt-4o-mini
 
 项目里有两条抓取路径：
 
-- **品牌官网提取**：设置页里提供可选 Firecrawl 集成。首次启动不要求用户填写，因为用户当时可能还没有 Firecrawl Key。
+- **企业档案补充**：可选 Firecrawl 官网抓取、普通 URL 读取和 PDF/TXT 上传都放在记忆工作区的企业档案页。首次启动不要求用户填写 Firecrawl，因为用户当时可能还没有 Key。
 - **发布链接反馈**：人工发布后，用户粘贴公开文章链接。应用通过本地 Vite API 读取页面文本，再由 AI 提取公开指标或内容质量反馈信号。
 
 当前项目不做第三方平台全自动发布。这个案例刻意把发布保留为人工步骤，便于体现 CentaurLoop 的人机协作边界。

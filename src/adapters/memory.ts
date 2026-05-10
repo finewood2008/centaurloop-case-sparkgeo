@@ -13,6 +13,10 @@ export interface MemoryEntry {
   category: MemoryCategory;
   agentId: string;
   createdAt: string;
+  scope?: 'profile' | 'cycle' | 'knowledge';
+  sourceTitle?: string;
+  sourceCycleId?: string;
+  tags?: string[];
 }
 
 const STORAGE_KEY = 'spark_geo_memories';
@@ -58,6 +62,7 @@ export async function storeAgentMemory(
   agentId: string,
   content: string,
   category: MemoryCategory,
+  metadata: Partial<Pick<MemoryEntry, 'scope' | 'sourceTitle' | 'sourceCycleId' | 'tags'>> = {},
 ): Promise<{ ok: boolean }> {
   const trimmed = content.trim();
   if (!trimmed) return { ok: false };
@@ -68,6 +73,7 @@ export async function storeAgentMemory(
     category,
     agentId,
     createdAt: new Date().toISOString(),
+    ...metadata,
   };
 
   const all = loadMemories();
@@ -79,7 +85,15 @@ export async function storeAgentMemory(
 export async function syncAgentMemories(
   agentId: string,
   idPrefix: string,
-  entries: Array<{ id: string; content: string; category: MemoryCategory }>,
+  entries: Array<{
+    id: string;
+    content: string;
+    category: MemoryCategory;
+    scope?: MemoryEntry['scope'];
+    sourceTitle?: string;
+    sourceCycleId?: string;
+    tags?: string[];
+  }>,
 ): Promise<{ ok: boolean }> {
   const all = loadMemories().filter(
     (memory) => !(memory.agentId === agentId && memory.id.startsWith(idPrefix)),
@@ -95,6 +109,10 @@ export async function syncAgentMemories(
       category: entry.category,
       agentId,
       createdAt,
+      scope: entry.scope,
+      sourceTitle: entry.sourceTitle,
+      sourceCycleId: entry.sourceCycleId,
+      tags: entry.tags,
     });
   }
 

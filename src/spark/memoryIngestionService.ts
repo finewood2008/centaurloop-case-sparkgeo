@@ -1,11 +1,17 @@
 import { extractModelText, getClientAsync } from '../adapters/ai-client';
-import { storeAgentMemory, type MemoryCategory } from '../adapters/memory';
+import { storeAgentMemory, type MemoryCategory, type MemoryEntry } from '../adapters/memory';
 import { crawlWebsite } from './firecrawlService';
 import { readPublishedUrl } from './publishedFeedbackService';
 
 export interface MemoryDraft {
   content: string;
   category: MemoryCategory;
+}
+
+export interface MemoryImportResult {
+  count: number;
+  sourceTitle: string;
+  drafts: MemoryDraft[];
 }
 
 function extractJsonArray(text: string): unknown[] | null {
@@ -86,16 +92,19 @@ export async function extractMemoryDrafts(params: {
   }
 }
 
-export async function storeMemoryDrafts(drafts: MemoryDraft[]): Promise<number> {
+export async function storeMemoryDrafts(
+  drafts: MemoryDraft[],
+  metadata: Partial<Pick<MemoryEntry, 'scope' | 'sourceTitle' | 'sourceCycleId' | 'tags'>> = {},
+): Promise<number> {
   let count = 0;
   for (const draft of drafts) {
-    const result = await storeAgentMemory('spark', draft.content, draft.category);
+    const result = await storeAgentMemory('spark', draft.content, draft.category, metadata);
     if (result.ok) count += 1;
   }
   return count;
 }
 
-export async function importWebsiteMemories(url: string): Promise<number> {
+export async function importWebsiteMemoryResult(url: string): Promise<MemoryImportResult> {
   const firecrawlKey = localStorage.getItem('spark_geo_firecrawl_key') ?? '';
   let title = url;
   let text = '';
@@ -112,7 +121,16 @@ export async function importWebsiteMemories(url: string): Promise<number> {
   }
 
   const drafts = await extractMemoryDrafts({ sourceTitle: title, sourceType: 'website', text });
-  return storeMemoryDrafts(drafts);
+  const count = await storeMemoryDrafts(drafts, {
+    scope: 'profile',
+    sourceTitle: title,
+    tags: ['官网资料', '网页导入'],
+  });
+  return { count, sourceTitle: title, drafts };
+}
+
+export async function importWebsiteMemories(url: string): Promise<number> {
+  return (await importWebsiteMemoryResult(url)).count;
 }
 
 function extractTextFromPdfLikeBytes(bytes: ArrayBuffer): string {
@@ -129,7 +147,7 @@ function extractTextFromPdfLikeBytes(bytes: ArrayBuffer): string {
     .trim();
 }
 
-export async function importDocumentMemories(file: File): Promise<number> {
+export async function importDocumentMemoryResult(file: File): Promise<MemoryImportResult> {
   const isText = file.type.startsWith('text/') || /\.(md|txt)$/i.test(file.name);
   const text = isText
     ? await file.text()
@@ -144,5 +162,14 @@ export async function importDocumentMemories(file: File): Promise<number> {
     sourceType: 'document',
     text,
   });
-  return storeMemoryDrafts(drafts);
+  const count = await storeMemoryDrafts(drafts, {
+    scope: 'profile',
+    sourceTitle: file.name,
+    tags: ['资料上传', isText ? '文本资料' : 'PDF'],
+  });
+  return { count, sourceTitle: file.name, drafts };
+}
+
+export async function importDocumentMemories(file: File): Promise<number> {
+  return (await importDocumentMemoryResult(file)).count;
 }

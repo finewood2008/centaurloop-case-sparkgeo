@@ -13,6 +13,9 @@ export async function syncBrandProfileToMemory(brand: BrandProfile): Promise<voi
         brand.industry ? `行业：${brand.industry}` : '',
         brand.targetAudience ? `目标受众：${brand.targetAudience}` : '',
       ].filter(Boolean).join('；'),
+      scope: 'profile' as const,
+      sourceTitle: '企业档案',
+      tags: ['企业档案', brand.industry, brand.targetAudience].filter(Boolean),
     },
     {
       id: 'tone',
@@ -20,6 +23,9 @@ export async function syncBrandProfileToMemory(brand: BrandProfile): Promise<voi
       content: brand.toneKeywords.length > 0
         ? `品牌调性偏好：${brand.toneKeywords.join('、')}`
         : '',
+      scope: 'profile' as const,
+      sourceTitle: '企业档案',
+      tags: ['品牌调性', ...brand.toneKeywords],
     },
     {
       id: 'differentiators',
@@ -27,16 +33,25 @@ export async function syncBrandProfileToMemory(brand: BrandProfile): Promise<voi
       content: brand.differentiators.length > 0
         ? `核心差异化：${brand.differentiators.join('；')}`
         : '',
+      scope: 'profile' as const,
+      sourceTitle: '企业档案',
+      tags: ['核心差异化'],
     },
     {
       id: 'business-context',
       category: 'fact' as const,
       content: brand.businessContext ? `业务与内容需求：${brand.businessContext}` : '',
+      scope: 'profile' as const,
+      sourceTitle: '企业档案',
+      tags: ['业务资料', '内容需求'],
     },
     {
       id: 'website-extract',
       category: 'fact' as const,
       content: brand.websiteExtract ? `官网摘要：${brand.websiteExtract}` : '',
+      scope: 'profile' as const,
+      sourceTitle: brand.websiteUrl || '官网资料',
+      tags: ['官网资料'],
     },
   ];
 
