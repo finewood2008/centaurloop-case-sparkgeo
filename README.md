@@ -12,8 +12,10 @@ This repository is intentionally built as a complete product prototype rather th
 - **Content growth use case**: weekly multi-platform planning for Xiaohongshu, WeChat, Moments, Douyin, SEO/GEO articles, and Zhihu.
 - **Human approval gates**: the user confirms plans, reviews drafts, manually publishes, and approves memories.
 - **Publishing workspace**: generated drafts are routed into an internal article publishing page for formatting review, copy, and publish confirmation.
+- **Article image assist**: the publishing page can generate a cover preview and image prompt from the article and workspace image settings.
 - **AI feedback crawling**: after publishing, the user pastes article links and the system reads public pages to analyze performance signals.
-- **Brand memory**: brand profile and user preferences are stored as memories and injected into future planning and generation prompts.
+- **Live memory workspace**: brand profile, imported web pages, uploaded documents, and approved lessons stay visible beside the conversation.
+- **Workspace settings**: platform selection, UI/output language, writing style, CTA style, emoji level, image model, and image style are configurable.
 - **Runtime flexibility**: supports built-in demo mode, OpenAI-compatible endpoints, Ollama, and LM Studio-style local servers.
 
 ## Product Flow
@@ -43,7 +45,7 @@ flowchart LR
 | Draft cards | Shows generated content with formatted Markdown preview and copy actions. |
 | Publishing page | Lets users review generated content, copy it, and mark each item as published. |
 | Feedback form | Accepts published article URLs and runs AI-powered feedback extraction. |
-| Memory panel | Shows memories used by the current loop and all stored memories. |
+| Memory workspace | A right-side live panel for brand profile, current-loop memory, web import, PDF/TXT import, and all stored memories. |
 | Runtime center | Shows whether the app is running in demo mode or a real model runtime. |
 
 ## Architecture
@@ -187,6 +189,9 @@ SparkGEO 是 **CentaurLoop** 的第一个公开案例项目：一个人机协同
 - **文章发布页**：生成内容先进入内部发布页，用户检查排版、复制正文、确认已发布。
 - **AI 抓取反馈**：发布后用户粘贴文章链接，系统读取公开页面并由 AI 提炼表现信号。
 - **品牌记忆**：品牌档案和偏好会存入记忆，并注入后续规划与生成。
+- **文章配图辅助**：发布页可以根据文章和图片设置生成封面预览与图片提示词。
+- **实时记忆工作区**：品牌档案、网页导入、文档上传和复盘经验会常驻显示在对话右侧。
+- **工作台设置**：可配置发布平台、界面/输出语言、语言风格、CTA、Emoji、图片模型和图片风格。
 - **灵活运行时**：支持内置 demo 模式、OpenAI-compatible 接口、Ollama、LM Studio 本地服务。
 
 ## 产品流程
@@ -216,7 +221,7 @@ flowchart LR
 | 草稿卡片 | 展示 Markdown 排版预览和复制操作。 |
 | 文章发布页 | 检查生成内容、复制正文、逐篇标记发布。 |
 | 反馈表单 | 粘贴已发布文章 URL，由 AI 抓取并分析反馈。 |
-| 记忆面板 | 展示本轮使用的记忆和全部长期记忆。 |
+| 记忆工作区 | 常驻右侧，展示企业档案、本轮记忆、网页导入、PDF/TXT 导入和全部长期记忆。 |
 | Runtime 中心 | 显示当前使用 demo 模式还是真实模型运行时。 |
 
 ## 架构

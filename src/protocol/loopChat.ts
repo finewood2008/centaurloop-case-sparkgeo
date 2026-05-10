@@ -8,6 +8,7 @@ import { submitQuickFeedback } from '../core/feedbackCollector';
 import type { CentaurLoopConfig, LoopCycle, SpiritBubblePayload } from '../core/types';
 import { getLoopConfigDescription, getLoopConfigLabel, getOutputLanguageInstruction, type Locale } from '../i18n';
 import { useBrandStore } from '../spark/brandStore';
+import { formatWorkspacePreferences, readWorkspaceSettings } from '../spark/workspaceSettings';
 import type {
   LoopChatSession,
   LoopMessage,
@@ -320,6 +321,7 @@ export class LoopChatController {
 
   private get advanceContext() {
     const brand = useBrandStore.getState().brand;
+    const workspaceSettings = readWorkspaceSettings();
     const ownerParts: string[] = [];
     if (brand) {
       if (brand.brandName) ownerParts.push(`品牌名称：${brand.brandName}`);
@@ -328,6 +330,7 @@ export class LoopChatController {
       if (brand.toneKeywords.length > 0) ownerParts.push(`品牌调性：${brand.toneKeywords.join('、')}`);
       if (brand.differentiators.length > 0) ownerParts.push(`核心差异化：${brand.differentiators.join('；')}`);
     }
+    ownerParts.push(`工作台偏好：\n${formatWorkspacePreferences(workspaceSettings)}`);
     const businessParts: string[] = [];
     if (brand?.businessContext) businessParts.push(brand.businessContext);
     if (brand?.websiteExtract) businessParts.push(`官网摘要：${brand.websiteExtract}`);
@@ -336,7 +339,9 @@ export class LoopChatController {
       connected: true,
       ownerContext: ownerParts.join('\n'),
       businessContext: businessParts.join('\n\n'),
-      outputLanguage: getOutputLanguageInstruction(this.locale),
+      outputLanguage: getOutputLanguageInstruction(
+        workspaceSettings.outputLanguage === 'auto' ? this.locale : workspaceSettings.outputLanguage,
+      ),
       pushBubble: this.noop,
     };
   }

@@ -1,51 +1,73 @@
 import { useState } from 'react';
-import { X, Loader2 } from 'lucide-react';
-import { useI18n } from '../i18n';
-import { useBrandStore } from '../spark/brandStore';
-import { syncBrandProfileToMemory } from '../spark/brandMemory';
+import type { ReactNode } from 'react';
+import { Image, Loader2, Settings2, SlidersHorizontal, X } from 'lucide-react';
+import { useI18n, type Locale } from '../i18n';
+import {
+  CONTENT_DEPTH_OPTIONS,
+  CTA_STYLE_OPTIONS,
+  EMOJI_LEVEL_OPTIONS,
+  IMAGE_RATIO_OPTIONS,
+  IMAGE_STYLE_OPTIONS,
+  PLATFORM_OPTIONS,
+  useWorkspaceSettingsStore,
+  WRITING_STYLE_OPTIONS,
+} from '../spark/workspaceSettings';
 
 interface SettingsPanelProps {
   onClose: () => void;
 }
 
-const TONE_OPTIONS = ['专业', '亲和', '干货', '活泼', '高端', '朴实', '幽默', '严肃'];
+type Tab = 'workflow' | 'models' | 'image';
 
-type Tab = 'model' | 'firecrawl' | 'brand';
+function OptionButton({
+  active,
+  children,
+  onClick,
+}: {
+  active: boolean;
+  children: ReactNode;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`rounded-lg px-3 py-1.5 text-sm transition-colors ${
+        active
+          ? 'bg-spark text-white'
+          : 'border border-spark-border text-spark-muted hover:bg-gray-50'
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
 
 export function SettingsPanel({ onClose }: SettingsPanelProps) {
-  const { t } = useI18n();
-  const [tab, setTab] = useState<Tab>('model');
+  const { t, locale, setLocale } = useI18n();
+  const [tab, setTab] = useState<Tab>('workflow');
+  const [saved, setSaved] = useState(false);
+  const settings = useWorkspaceSettingsStore((s) => s.settings);
+  const updateSettings = useWorkspaceSettingsStore((s) => s.updateSettings);
+  const togglePlatform = useWorkspaceSettingsStore((s) => s.togglePlatform);
 
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('spark_geo_api_key') ?? '');
   const [model, setModel] = useState(() => localStorage.getItem('spark_geo_model') ?? 'gpt-4o-mini');
   const [baseUrl, setBaseUrl] = useState(() => localStorage.getItem('spark_geo_base_url') ?? 'https://api.openai.com/v1');
-  const [saved, setSaved] = useState(false);
-
   const [fcKey, setFcKey] = useState(() => localStorage.getItem('spark_geo_firecrawl_key') ?? '');
   const [fcTesting, setFcTesting] = useState(false);
   const [fcResult, setFcResult] = useState('');
 
-  const brand = useBrandStore((s) => s.brand);
-  const updateBrand = useBrandStore((s) => s.updateBrand);
-  const [brandName, setBrandName] = useState(brand?.brandName ?? '');
-  const [industry, setIndustry] = useState(brand?.industry ?? '');
-  const [targetAudience, setTargetAudience] = useState(brand?.targetAudience ?? '');
-  const [toneKeywords, setToneKeywords] = useState<string[]>(brand?.toneKeywords ?? []);
-  const [differentiators, setDifferentiators] = useState(brand?.differentiators?.join('\n') ?? '');
-  const [businessCtx, setBusinessCtx] = useState(brand?.businessContext ?? '');
+  const flashSaved = () => {
+    setSaved(true);
+    setTimeout(() => setSaved(false), 1800);
+  };
 
   const handleSaveModel = () => {
     localStorage.setItem('spark_geo_api_key', apiKey);
     localStorage.setItem('spark_geo_model', model);
     localStorage.setItem('spark_geo_base_url', baseUrl);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
-  };
-
-  const handleSaveFc = () => {
     localStorage.setItem('spark_geo_firecrawl_key', fcKey);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    flashSaved();
   };
 
   const handleTestFc = async () => {
@@ -58,229 +80,274 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ url: 'https://example.com', firecrawlKey: fcKey }),
       });
-      setFcResult(res.ok ? '连接成功' : `连接失败 (${res.status})`);
+      setFcResult(res.ok ? 'Firecrawl 连接成功' : `Firecrawl 连接失败 (${res.status})`);
     } catch {
-      setFcResult('连接失败');
+      setFcResult('Firecrawl 连接失败');
     } finally {
       setFcTesting(false);
     }
   };
 
-  const handleSaveBrand = () => {
-    const updates = {
-      brandName,
-      industry,
-      targetAudience,
-      toneKeywords,
-      differentiators: differentiators.split('\n').map((s) => s.trim()).filter(Boolean),
-      businessContext: businessCtx,
-    };
-    updateBrand(updates);
-    if (brand) {
-      void syncBrandProfileToMemory({
-        ...brand,
-        ...updates,
-        updatedAt: new Date().toISOString(),
-      });
-    }
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
-  };
-
-  const toggleTone = (tone: string) => {
-    setToneKeywords((prev) =>
-      prev.includes(tone) ? prev.filter((t) => t !== tone) : [...prev, tone],
-    );
-  };
-
-  const tabs: { id: Tab; label: string }[] = [
-    { id: 'model', label: 'AI 模型' },
-    { id: 'firecrawl', label: 'Firecrawl' },
-    { id: 'brand', label: '品牌档案' },
+  const tabs: { id: Tab; label: string; icon: ReactNode }[] = [
+    { id: 'workflow', label: '工作流偏好', icon: <SlidersHorizontal size={15} /> },
+    { id: 'models', label: '模型与集成', icon: <Settings2 size={15} /> },
+    { id: 'image', label: '图片生成', icon: <Image size={15} /> },
   ];
 
   return (
-    <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4" onClick={onClose}>
       <div
-        className="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 max-h-[85vh] flex flex-col"
+        className="flex max-h-[88vh] w-full max-w-3xl flex-col rounded-2xl bg-white shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-6 pt-6 pb-2">
-          <h2 className="text-lg font-semibold text-spark-text">{t('settings.title')}</h2>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100">
+        <div className="flex items-center justify-between px-6 pt-6 pb-3">
+          <div>
+            <h2 className="text-lg font-semibold text-spark-text">{t('settings.title')}</h2>
+            <p className="text-xs text-spark-muted">控制内容策略、模型运行时、配图模型和抓取集成</p>
+          </div>
+          <button onClick={onClose} className="rounded-lg p-1.5 hover:bg-gray-100">
             <X size={20} />
           </button>
         </div>
 
-        <div className="flex border-b border-spark-border mx-6">
-          {tabs.map((t) => (
+        <div className="mx-6 flex border-b border-spark-border">
+          {tabs.map((item) => (
             <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              className={`px-4 py-2 text-sm font-medium transition-colors ${
-                tab === t.id
-                  ? 'text-spark border-b-2 border-spark'
+              key={item.id}
+              onClick={() => setTab(item.id)}
+              className={`inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors ${
+                tab === item.id
+                  ? 'border-b-2 border-spark text-spark'
                   : 'text-spark-muted hover:text-spark-text'
               }`}
             >
-              {t.label}
+              {item.icon}
+              {item.label}
             </button>
           ))}
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6 py-4">
-          {tab === 'model' && (
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-spark-text mb-1 block">API Key</label>
-                <input
-                  type="password"
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  className="w-full border border-spark-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
-                  placeholder="sk-..."
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-spark-text mb-1 block">模型名称</label>
-                <input
-                  type="text"
-                  value={model}
-                  onChange={(e) => setModel(e.target.value)}
-                  className="w-full border border-spark-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
-                  placeholder="gpt-4o-mini"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-spark-text mb-1 block">Base URL</label>
-                <input
-                  type="text"
-                  value={baseUrl}
-                  onChange={(e) => setBaseUrl(e.target.value)}
-                  className="w-full border border-spark-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
-                  placeholder="https://api.openai.com/v1"
-                />
-              </div>
-              <button
-                onClick={handleSaveModel}
-                className="w-full py-2 rounded-xl bg-spark text-white font-medium hover:bg-orange-600 transition-colors"
-              >
-                {saved ? '已保存' : '保存'}
-              </button>
+        <div className="flex-1 overflow-y-auto px-6 py-5">
+          {tab === 'workflow' && (
+            <div className="space-y-6">
+              <section>
+                <h3 className="mb-2 text-sm font-semibold text-spark-text">发布平台</h3>
+                <div className="flex flex-wrap gap-2">
+                  {PLATFORM_OPTIONS.map((platform) => (
+                    <OptionButton
+                      key={platform}
+                      active={settings.enabledPlatforms.includes(platform)}
+                      onClick={() => togglePlatform(platform)}
+                    >
+                      {platform}
+                    </OptionButton>
+                  ))}
+                </div>
+              </section>
+
+              <section className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-spark-text">界面语言</label>
+                  <select
+                    value={locale}
+                    onChange={(event) => setLocale(event.target.value as Locale)}
+                    className="w-full rounded-xl border border-spark-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
+                  >
+                    <option value="zh-CN">简体中文</option>
+                    <option value="en">English</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-spark-text">内容输出语言</label>
+                  <select
+                    value={settings.outputLanguage}
+                    onChange={(event) => updateSettings({ outputLanguage: event.target.value as typeof settings.outputLanguage })}
+                    className="w-full rounded-xl border border-spark-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
+                  >
+                    <option value="auto">跟随界面语言</option>
+                    <option value="zh-CN">简体中文</option>
+                    <option value="en">English</option>
+                  </select>
+                </div>
+              </section>
+
+              <section>
+                <h3 className="mb-2 text-sm font-semibold text-spark-text">语言风格</h3>
+                <div className="flex flex-wrap gap-2">
+                  {WRITING_STYLE_OPTIONS.map((style) => (
+                    <OptionButton
+                      key={style}
+                      active={settings.writingStyle === style}
+                      onClick={() => updateSettings({ writingStyle: style })}
+                    >
+                      {style}
+                    </OptionButton>
+                  ))}
+                </div>
+              </section>
+
+              <section className="grid gap-4 md:grid-cols-3">
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-spark-text">内容深度</label>
+                  <select
+                    value={settings.contentDepth}
+                    onChange={(event) => updateSettings({ contentDepth: event.target.value })}
+                    className="w-full rounded-xl border border-spark-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
+                  >
+                    {CONTENT_DEPTH_OPTIONS.map((item) => <option key={item}>{item}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-spark-text">CTA 目标</label>
+                  <select
+                    value={settings.ctaStyle}
+                    onChange={(event) => updateSettings({ ctaStyle: event.target.value })}
+                    className="w-full rounded-xl border border-spark-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
+                  >
+                    {CTA_STYLE_OPTIONS.map((item) => <option key={item}>{item}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-spark-text">Emoji 使用</label>
+                  <select
+                    value={settings.emojiLevel}
+                    onChange={(event) => updateSettings({ emojiLevel: event.target.value })}
+                    className="w-full rounded-xl border border-spark-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
+                  >
+                    {EMOJI_LEVEL_OPTIONS.map((item) => <option key={item}>{item}</option>)}
+                  </select>
+                </div>
+              </section>
             </div>
           )}
 
-          {tab === 'firecrawl' && (
-            <div className="space-y-4">
-              <p className="text-sm text-spark-muted">
-                Firecrawl 用于自动抓取你的官网数据。在 <span className="text-spark">firecrawl.dev</span> 注册获取免费 API Key。
-              </p>
-              <div>
-                <label className="text-sm font-medium text-spark-text mb-1 block">Firecrawl API Key</label>
-                <input
-                  type="password"
-                  value={fcKey}
-                  onChange={(e) => setFcKey(e.target.value)}
-                  className="w-full border border-spark-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
-                  placeholder="fc-..."
-                />
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={handleSaveFc}
-                  className="flex-1 py-2 rounded-xl bg-spark text-white font-medium hover:bg-orange-600 transition-colors"
-                >
-                  {saved ? '已保存' : '保存'}
-                </button>
+          {tab === 'models' && (
+            <div className="grid gap-6 md:grid-cols-2">
+              <section className="space-y-4">
+                <h3 className="text-sm font-semibold text-spark-text">文本模型</h3>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-spark-text">API Key</label>
+                  <input
+                    type="password"
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    className="w-full rounded-xl border border-spark-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
+                    placeholder="sk-..."
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-spark-text">模型名称</label>
+                  <input
+                    type="text"
+                    value={model}
+                    onChange={(e) => setModel(e.target.value)}
+                    className="w-full rounded-xl border border-spark-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
+                    placeholder="gpt-4o-mini"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-spark-text">Base URL</label>
+                  <input
+                    type="text"
+                    value={baseUrl}
+                    onChange={(e) => setBaseUrl(e.target.value)}
+                    className="w-full rounded-xl border border-spark-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
+                    placeholder="https://api.openai.com/v1"
+                  />
+                </div>
+              </section>
+
+              <section className="space-y-4">
+                <h3 className="text-sm font-semibold text-spark-text">网页抓取集成</h3>
+                <p className="text-sm leading-6 text-spark-muted">
+                  Firecrawl Key 用于在记忆板块抓取官网或资料页；没有配置时，系统会尝试使用基础网页读取。
+                </p>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-spark-text">Firecrawl API Key</label>
+                  <input
+                    type="password"
+                    value={fcKey}
+                    onChange={(e) => setFcKey(e.target.value)}
+                    className="w-full rounded-xl border border-spark-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
+                    placeholder="fc-..."
+                  />
+                </div>
                 <button
                   onClick={handleTestFc}
                   disabled={fcTesting || !fcKey.trim()}
-                  className="px-4 py-2 rounded-xl border border-spark-border text-sm text-spark-muted hover:bg-gray-50 disabled:opacity-40 flex items-center gap-1.5"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-spark-border px-4 py-2 text-sm text-spark-muted hover:bg-gray-50 disabled:opacity-40"
                 >
-                  {fcTesting ? <><Loader2 size={14} className="animate-spin" /> 测试中</> : '测试连接'}
+                  {fcTesting ? <Loader2 size={14} className="animate-spin" /> : null}
+                  {fcTesting ? '测试中' : '测试 Firecrawl'}
                 </button>
-              </div>
-              {fcResult && (
-                <p className={`text-sm ${fcResult.includes('成功') ? 'text-green-600' : 'text-red-500'}`}>
-                  {fcResult}
-                </p>
-              )}
+                {fcResult && (
+                  <p className={`text-sm ${fcResult.includes('成功') ? 'text-green-600' : 'text-red-500'}`}>
+                    {fcResult}
+                  </p>
+                )}
+              </section>
             </div>
           )}
 
-          {tab === 'brand' && (
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-spark-text mb-1 block">品牌名称</label>
-                <input
-                  type="text"
-                  value={brandName}
-                  onChange={(e) => setBrandName(e.target.value)}
-                  className="w-full border border-spark-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-spark-text mb-1 block">行业</label>
-                <input
-                  type="text"
-                  value={industry}
-                  onChange={(e) => setIndustry(e.target.value)}
-                  className="w-full border border-spark-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-spark-text mb-1 block">目标受众</label>
-                <input
-                  type="text"
-                  value={targetAudience}
-                  onChange={(e) => setTargetAudience(e.target.value)}
-                  className="w-full border border-spark-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-spark-text mb-1 block">品牌调性</label>
-                <div className="flex flex-wrap gap-2">
-                  {TONE_OPTIONS.map((tone) => (
-                    <button
-                      key={tone}
-                      onClick={() => toggleTone(tone)}
-                      className={`px-3 py-1 rounded-lg text-sm transition-colors ${
-                        toneKeywords.includes(tone)
-                          ? 'bg-spark text-white'
-                          : 'border border-spark-border text-spark-muted hover:bg-gray-50'
-                      }`}
-                    >
-                      {tone}
-                    </button>
-                  ))}
+          {tab === 'image' && (
+            <div className="space-y-5">
+              <div className="grid gap-4 md:grid-cols-3">
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-spark-text">图片生成模型</label>
+                  <input
+                    type="text"
+                    value={settings.imageModel}
+                    onChange={(event) => updateSettings({ imageModel: event.target.value })}
+                    className="w-full rounded-xl border border-spark-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
+                    placeholder="gpt-image-2"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-spark-text">图片风格</label>
+                  <select
+                    value={settings.imageStyle}
+                    onChange={(event) => updateSettings({ imageStyle: event.target.value })}
+                    className="w-full rounded-xl border border-spark-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
+                  >
+                    {IMAGE_STYLE_OPTIONS.map((item) => <option key={item}>{item}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-spark-text">默认比例</label>
+                  <select
+                    value={settings.imageRatio}
+                    onChange={(event) => updateSettings({ imageRatio: event.target.value })}
+                    className="w-full rounded-xl border border-spark-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
+                  >
+                    {IMAGE_RATIO_OPTIONS.map((item) => <option key={item}>{item}</option>)}
+                  </select>
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium text-spark-text mb-1 block">核心差异化</label>
+                <label className="mb-1 block text-sm font-medium text-spark-text">配图补充要求</label>
                 <textarea
-                  value={differentiators}
-                  onChange={(e) => setDifferentiators(e.target.value)}
-                  rows={2}
-                  className="w-full border border-spark-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-spark-text mb-1 block">业务资料</label>
-                <textarea
-                  value={businessCtx}
-                  onChange={(e) => setBusinessCtx(e.target.value)}
+                  value={settings.imagePromptHint}
+                  onChange={(event) => updateSettings({ imagePromptHint: event.target.value })}
                   rows={4}
-                  className="w-full border border-spark-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
+                  className="w-full rounded-xl border border-spark-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
+                  placeholder="例如：避免真人脸，偏产品感，多留白，适合小红书封面..."
                 />
               </div>
-              <button
-                onClick={handleSaveBrand}
-                className="w-full py-2 rounded-xl bg-spark text-white font-medium hover:bg-orange-600 transition-colors"
-              >
-                {saved ? '已保存' : '保存品牌信息'}
-              </button>
+              <div className="rounded-xl bg-gray-50 p-3 text-sm leading-6 text-spark-muted">
+                当前版本会在文章发布页生成可预览的封面图和图片提示词；后续接入真实图片 API 时会复用这里的模型与风格设置。
+              </div>
             </div>
           )}
+        </div>
+
+        <div className="flex items-center justify-between border-t border-spark-border px-6 py-4">
+          <span className="text-xs text-spark-muted">{saved ? '已保存' : '设置会即时生效，模型密钥需要点击保存'}</span>
+          <button
+            onClick={handleSaveModel}
+            className="rounded-xl bg-spark px-5 py-2 text-sm font-medium text-white hover:bg-orange-600"
+          >
+            {saved ? '已保存' : '保存设置'}
+          </button>
         </div>
       </div>
     </div>

@@ -50,6 +50,9 @@ function createDemoClient(): AIClient {
         if (prompt.includes('已发布文章链接反馈分析器')) {
           return { text: generateDemoPublishedUrlFeedbackResponse(wantsEnglish(prompt)) };
         }
+        if (prompt.includes('Spark GEO 记忆提取器')) {
+          return { text: generateDemoMemoryExtractionResponse(wantsEnglish(prompt)) };
+        }
         return { text: generateDemoContentResponse(prompt) };
       },
     },
@@ -365,6 +368,26 @@ function generateDemoPublishedUrlFeedbackResponse(english: boolean): string {
       '发布页已包含标题和正文。',
       '页面未公开展示阅读、点赞、收藏等数据。',
       '如果平台允许，可以补一个更明确的互动引导。',
+    ],
+  });
+}
+
+function generateDemoMemoryExtractionResponse(english: boolean): string {
+  if (english) {
+    return JSON.stringify({
+      memories: [
+        { content: 'The imported material describes the brand or business context and should be referenced in future content planning.', category: 'fact' },
+        { content: 'Prefer practical, concrete content that helps the audience understand the workflow quickly.', category: 'preference' },
+        { content: 'When generating content, connect claims to the CentaurLoop human-in-the-loop cycle.', category: 'lesson' },
+      ],
+    });
+  }
+
+  return JSON.stringify({
+    memories: [
+      { content: '导入资料包含品牌或业务背景，后续内容规划需要优先参考。', category: 'fact' },
+      { content: '内容风格应偏实战、具体，让目标受众快速理解工作流价值。', category: 'preference' },
+      { content: '生成内容时要把观点连接到 CentaurLoop 的人机协同闭环。', category: 'lesson' },
     ],
   });
 }

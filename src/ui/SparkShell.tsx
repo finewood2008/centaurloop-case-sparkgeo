@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Settings, Globe, BookOpen } from 'lucide-react';
+import { Settings } from 'lucide-react';
 import { useI18n } from '../i18n';
 import { useLoopStore } from '../core/loopStore';
 import { SPARK_GEO_LOOP_CONFIG } from '../core/loopConfigs';
@@ -10,9 +10,8 @@ import { MemoryPanel } from './MemoryPanel';
 import { ArticlePublisher } from './ArticlePublisher';
 
 export function SparkShell() {
-  const { t, toggleLocale } = useI18n();
+  const { t } = useI18n();
   const [showSettings, setShowSettings] = useState(false);
-  const [showMemory, setShowMemory] = useState(false);
   const [publisherCycleId, setPublisherCycleId] = useState<string | null>(null);
   const [publishDoneSignal, setPublishDoneSignal] = useState(0);
   const registered = useRef(false);
@@ -35,20 +34,6 @@ export function SparkShell() {
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setShowMemory(true)}
-            className="p-2 rounded-lg text-spark-muted hover:bg-gray-100 transition-colors"
-            title="记忆"
-          >
-            <BookOpen size={18} />
-          </button>
-          <button
-            onClick={toggleLocale}
-            className="p-2 rounded-lg text-spark-muted hover:bg-gray-100 transition-colors"
-            title={t('app.language')}
-          >
-            <Globe size={18} />
-          </button>
-          <button
             onClick={() => setShowSettings(true)}
             className="p-2 rounded-lg text-spark-muted hover:bg-gray-100 transition-colors"
             title={t('settings.title')}
@@ -58,12 +43,15 @@ export function SparkShell() {
         </div>
       </header>
 
-      {/* Main Chat */}
-      <div className="flex-1 overflow-hidden">
-        <ChatPanel
-          onOpenPublisher={setPublisherCycleId}
-          publishDoneSignal={publishDoneSignal}
-        />
+      {/* Main workspace */}
+      <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_360px] overflow-hidden">
+        <div className="min-w-0 overflow-hidden">
+          <ChatPanel
+            onOpenPublisher={setPublisherCycleId}
+            publishDoneSignal={publishDoneSignal}
+          />
+        </div>
+        <MemoryPanel />
       </div>
 
       {/* Runtime Dropdown */}
@@ -71,7 +59,6 @@ export function SparkShell() {
 
       {/* Panels */}
       {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
-      <MemoryPanel open={showMemory} onClose={() => setShowMemory(false)} />
       {publisherCycleId && (
         <ArticlePublisher
           cycleId={publisherCycleId}

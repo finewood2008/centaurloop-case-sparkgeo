@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
-import { Check, Copy, FileText, X } from 'lucide-react';
+import { Check, Copy, FileText, Image, Sparkles, X } from 'lucide-react';
 import { useLoopStore } from '../core/loopStore';
+import { generateArticleImageAsset, type ArticleImageAsset } from '../spark/articleImageService';
+import { useWorkspaceSettingsStore } from '../spark/workspaceSettings';
 import { MarkdownContent } from './MarkdownContent';
 
 interface ArticlePublisherProps {
@@ -12,17 +14,21 @@ interface ArticlePublisherProps {
 export function ArticlePublisher({ cycleId, onClose, onComplete }: ArticlePublisherProps) {
   const cycle = useLoopStore((s) => s.cycles[cycleId]);
   const updateTask = useLoopStore((s) => s.updateTask);
+  const imageSettings = useWorkspaceSettingsStore((s) => s.settings);
   const tasks = useMemo(
     () => cycle?.tasks.filter((task) => task.status === 'confirmed' || task.status === 'published' || task.status === 'feedback_done') ?? [],
     [cycle],
   );
   const [selectedTaskId, setSelectedTaskId] = useState(() => tasks[0]?.id ?? '');
   const [copiedTaskId, setCopiedTaskId] = useState('');
+  const [copiedPromptTaskId, setCopiedPromptTaskId] = useState('');
+  const [imageAssets, setImageAssets] = useState<Record<string, ArticleImageAsset>>({});
   const [publishedIds, setPublishedIds] = useState<Set<string>>(
     () => new Set(tasks.filter((task) => task.publish?.published).map((task) => task.id)),
   );
 
   const selectedTask = tasks.find((task) => task.id === selectedTaskId) ?? tasks[0];
+  const selectedImageAsset = selectedTask ? imageAssets[selectedTask.id] : undefined;
   const allPublished = tasks.length > 0 && tasks.every((task) => publishedIds.has(task.id));
 
   if (!cycle || tasks.length === 0) {
@@ -55,6 +61,24 @@ export function ArticlePublisher({ cycleId, onClose, onComplete }: ArticlePublis
         publishedAt: new Date().toISOString(),
       },
     });
+  };
+
+  const generateImage = (taskId: string) => {
+    const task = tasks.find((item) => item.id === taskId);
+    if (!task?.draft) return;
+    const asset = generateArticleImageAsset({
+      title: task.draft.title,
+      appName: task.appName,
+      content: task.draft.content,
+      settings: imageSettings,
+    });
+    setImageAssets((prev) => ({ ...prev, [taskId]: asset }));
+  };
+
+  const copyImagePrompt = async (taskId: string, prompt: string) => {
+    await navigator.clipboard.writeText(prompt);
+    setCopiedPromptTaskId(taskId);
+    setTimeout(() => setCopiedPromptTaskId(''), 1600);
   };
 
   return (
@@ -107,6 +131,13 @@ export function ArticlePublisher({ cycleId, onClose, onComplete }: ArticlePublis
                   </div>
                   <div className="flex gap-2">
                     <button
+                      onClick={() => generateImage(selectedTask.id)}
+                      className="inline-flex items-center gap-2 rounded-xl border border-spark-border bg-white px-4 py-2 text-sm text-spark-text transition-colors hover:bg-gray-50"
+                    >
+                      <Sparkles size={16} />
+                      自动配图
+                    </button>
+                    <button
                       onClick={() => handleCopy(selectedTask.id, selectedTask.draft?.content ?? '')}
                       className="inline-flex items-center gap-2 rounded-xl border border-spark-border bg-white px-4 py-2 text-sm text-spark-text transition-colors hover:bg-gray-50"
                     >
@@ -122,6 +153,32 @@ export function ArticlePublisher({ cycleId, onClose, onComplete }: ArticlePublis
                     </button>
                   </div>
                 </div>
+
+                {selectedImageAsset && (
+                  <div className="mb-4 rounded-2xl border border-spark-border bg-white p-4 shadow-sm">
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <div className="inline-flex items-center gap-2 text-sm font-semibold text-spark-text">
+                        <Image size={16} className="text-spark" />
+                        文章配图
+                      </div>
+                      <button
+                        onClick={() => copyImagePrompt(selectedTask.id, selectedImageAsset.prompt)}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-spark-border px-3 py-1.5 text-xs text-spark-muted hover:bg-gray-50"
+                      >
+                        {copiedPromptTaskId === selectedTask.id ? <Check size={14} className="text-green-600" /> : <Copy size={14} />}
+                        {copiedPromptTaskId === selectedTask.id ? '提示词已复制' : '复制图片提示词'}
+                      </button>
+                    </div>
+                    <img
+                      src={selectedImageAsset.dataUrl}
+                      alt={`${selectedTask.draft.title} cover`}
+                      className="w-full rounded-xl border border-spark-border"
+                    />
+                    <p className="mt-2 text-xs leading-5 text-spark-muted">
+                      {selectedImageAsset.model} · {selectedImageAsset.style}
+                    </p>
+                  </div>
+                )}
 
                 <article className="rounded-2xl border border-spark-border bg-white p-6 shadow-sm">
                   <MarkdownContent content={selectedTask.draft.content} />
