@@ -28,13 +28,15 @@ export interface RuntimeScanResult {
   selectedRuntimeId: string;
 }
 
+const CUSTOM_RUNTIME_ID = 'user-settings';
+
 const DEMO_STATUS: RuntimeStatus = {
   mode: 'demo',
-  provider: 'local-demo',
-  model: 'demo',
+  provider: 'built-in',
+  model: '内置体验',
   configured: false,
   available: true,
-  message: 'Demo runtime is active.',
+  message: 'Built-in experience runtime is active.',
 };
 
 export async function fetchRuntimeStatus(): Promise<RuntimeStatus> {
@@ -48,43 +50,104 @@ export async function fetchRuntimeStatus(): Promise<RuntimeStatus> {
   }
 }
 
+function readStoredUserModelConfig(): UserModelConfig | null {
+  if (typeof window === 'undefined') return null;
+  const apiKey = window.localStorage.getItem('spark_geo_api_key') ?? '';
+  if (!apiKey.trim()) return null;
+  return {
+    apiKey: apiKey.trim(),
+    baseUrl: (window.localStorage.getItem('spark_geo_base_url') ?? 'https://api.openai.com/v1').trim().replace(/\/$/, ''),
+    model: (window.localStorage.getItem('spark_geo_model') ?? 'gpt-4o-mini').trim(),
+  };
+}
+
+function userSettingsConnector(): RuntimeConnector {
+  const config = readStoredUserModelConfig();
+  return {
+    id: CUSTOM_RUNTIME_ID,
+    label: 'Custom OpenAI-compatible model',
+    provider: 'custom-openai-compatible',
+    endpoint: config?.baseUrl ?? 'https://api.openai.com/v1',
+    model: config?.model ?? 'gpt-4o-mini',
+    models: config ? [config.model] : [],
+    configured: Boolean(config),
+    available: Boolean(config),
+    kind: 'openai-compatible',
+    message: config
+      ? 'Custom model from Settings is ready.'
+      : 'Add an API key, base URL, and model name to use a custom model.',
+  };
+}
+
+function withUserSettingsConnector(scan: RuntimeScanResult): RuntimeScanResult {
+  if (typeof window === 'undefined') return scan;
+  const custom = userSettingsConnector();
+  const connectors = [
+    ...scan.connectors.filter((connector) => connector.id !== CUSTOM_RUNTIME_ID),
+    custom,
+  ];
+  return {
+    connectors,
+    selectedRuntimeId: window.localStorage.getItem('spark_geo_runtime_id') ?? scan.selectedRuntimeId,
+  };
+}
+
 export async function scanRuntimeConnectors(): Promise<RuntimeScanResult> {
   try {
     const response = await fetch('/api/runtime/scan', { headers: { accept: 'application/json' } });
     if (!response.ok) {
-      return {
+      return withUserSettingsConnector({
         connectors: [{
           id: 'local-demo',
-          label: 'Local demo runtime',
-          provider: 'local-demo',
-          model: 'demo',
+          label: 'Built-in experience runtime',
+          provider: 'built-in',
+          model: '内置体验',
           configured: true,
           available: true,
           kind: 'demo',
-          message: 'Built-in deterministic demo runtime.',
+          message: 'Built-in deterministic runtime. No API key required.',
         }],
         selectedRuntimeId: 'local-demo',
-      };
+      });
     }
-    return await response.json() as RuntimeScanResult;
+    return withUserSettingsConnector(await response.json() as RuntimeScanResult);
   } catch {
-    return {
+    return withUserSettingsConnector({
       connectors: [{
         id: 'local-demo',
-        label: 'Local demo runtime',
-        provider: 'local-demo',
-        model: 'demo',
+        label: 'Built-in experience runtime',
+        provider: 'built-in',
+        model: '内置体验',
         configured: true,
         available: true,
         kind: 'demo',
-        message: 'Built-in deterministic demo runtime.',
+        message: 'Built-in deterministic runtime. No API key required.',
       }],
       selectedRuntimeId: 'local-demo',
-    };
+    });
   }
 }
 
 export async function connectRuntime(runtimeId: string): Promise<{ connector: RuntimeConnector; status: RuntimeStatus }> {
+  if (runtimeId === CUSTOM_RUNTIME_ID) {
+    const connector = userSettingsConnector();
+    if (!connector.available) {
+      throw new Error('Custom model is not configured.');
+    }
+    return {
+      connector,
+      status: {
+        mode: 'real',
+        provider: connector.provider,
+        model: connector.model,
+        configured: true,
+        available: true,
+        message: connector.message,
+        selectedRuntimeId: connector.id,
+      },
+    };
+  }
+
   const response = await fetch('/api/runtime/connect', {
     method: 'POST',
     headers: { 'content-type': 'application/json', accept: 'application/json' },
@@ -118,14 +181,8 @@ export interface UserModelConfig {
 }
 
 export function readUserModelConfig(): UserModelConfig | null {
-  if (typeof window === 'undefined') return null;
-  const apiKey = window.localStorage.getItem('spark_geo_api_key') ?? '';
-  if (!apiKey.trim()) return null;
-  return {
-    apiKey: apiKey.trim(),
-    baseUrl: (window.localStorage.getItem('spark_geo_base_url') ?? 'https://api.openai.com/v1').trim().replace(/\/$/, ''),
-    model: (window.localStorage.getItem('spark_geo_model') ?? 'gpt-4o-mini').trim(),
-  };
+  if (readSelectedRuntimeId() !== CUSTOM_RUNTIME_ID) return null;
+  return readStoredUserModelConfig();
 }
 
 export function hasUserModelConfig(): boolean {

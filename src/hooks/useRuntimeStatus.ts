@@ -9,8 +9,8 @@ import {
 
 const INITIAL_STATUS: RuntimeStatus = {
   mode: 'demo',
-  provider: 'local-demo',
-  model: 'demo',
+  provider: 'built-in',
+  model: '内置体验',
   configured: false,
   available: true,
   message: 'Checking runtime...',
@@ -87,10 +87,10 @@ export function useRuntimeStatus(): RuntimeState {
         setStatus((current) => ({
           ...current,
           mode: 'demo',
-          provider: 'local-demo',
-          model: 'demo',
+          provider: 'built-in',
+          model: '内置体验',
           available: true,
-          message: 'Remote runtime failed. Demo runtime is active.',
+          message: 'Remote runtime failed. Built-in runtime is active.',
         }));
       }
       if (custom.detail?.mode === 'real') {

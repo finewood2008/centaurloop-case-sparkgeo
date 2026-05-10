@@ -1,5 +1,13 @@
 # Upgrade Notes
 
+## 2026-05-11 — Runtime Settings Consolidation
+
+- Moved runtime selection from the floating bottom-right control into **Settings -> Model and Integrations**.
+- Added runtime foundation cards for built-in experience, environment-configured OpenAI-compatible models, Ollama, LM Studio, and custom OpenAI-compatible models.
+- Added a custom model flow where users can save API key, base URL, and model name, then use that configuration as the active runtime foundation.
+- Removed the floating runtime dropdown from the main workspace.
+- Replaced user-facing demo wording with built-in experience/runtime wording.
+
 ## 2026-05-11 — Image Engine Setting
 
 - Added an image generation engine selector under **Settings -> Model and Integrations**.
@@ -37,6 +45,14 @@ This upgrade reshapes the right-side memory workspace around how an operator act
 ---
 
 # 升级说明
+
+## 2026-05-11 — 运行时设置整合
+
+- 把右下角悬浮运行时选择整合进 **设置 -> 模型与集成**。
+- 增加运行时底座卡片：内置体验、环境变量 OpenAI-compatible、Ollama、LM Studio、自定义 OpenAI-compatible。
+- 增加自定义模型流程，用户可以保存 API Key、Base URL 和模型名称，并直接把它设为当前运行时底座。
+- 移除主界面右下角的运行时下拉入口。
+- 用户界面不再显示 demo 字样，统一改为内置体验/运行时表述。
 
 ## 2026-05-11 — 图片引擎设置
 

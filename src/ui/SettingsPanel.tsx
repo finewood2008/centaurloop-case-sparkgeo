@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { Image, Loader2, Settings2, SlidersHorizontal, X } from 'lucide-react';
+import { Check, Cpu, Image, Loader2, RefreshCcw, Settings2, SlidersHorizontal, X } from 'lucide-react';
+import { useRuntimeStatus } from '../hooks/useRuntimeStatus';
 import { useI18n, type Locale } from '../i18n';
+import type { RuntimeConnector } from '../adapters/runtime';
 import {
   CONTENT_DEPTH_OPTIONS,
   CTA_STYLE_OPTIONS,
@@ -19,6 +21,9 @@ interface SettingsPanelProps {
 }
 
 type Tab = 'workflow' | 'models' | 'image';
+
+const CUSTOM_RUNTIME_ID = 'user-settings';
+const RUNTIME_STORAGE_KEY = 'spark_geo_runtime_id';
 
 function OptionButton({
   active,
@@ -43,6 +48,30 @@ function OptionButton({
   );
 }
 
+function runtimeDisplayLabel(connector: RuntimeConnector): string {
+  if (connector.id === 'local-demo') return '内置体验运行时';
+  if (connector.id === CUSTOM_RUNTIME_ID) return '自定义 OpenAI-compatible 模型';
+  return connector.label;
+}
+
+function runtimeDisplayMessage(connector: RuntimeConnector): string {
+  if (connector.id === 'local-demo') return '无需密钥，用于首次体验和离线演示。';
+  if (connector.id === CUSTOM_RUNTIME_ID) {
+    return connector.available
+      ? '使用下方自定义模型配置作为底座。'
+      : '填写 API Key、Base URL 和模型名称后可启用。';
+  }
+  return connector.message.replace(/\bdemo\b/gi, 'built-in');
+}
+
+function runtimeKindLabel(connector: RuntimeConnector): string {
+  if (connector.id === 'local-demo') return '内置';
+  if (connector.id === CUSTOM_RUNTIME_ID) return '自定义';
+  if (connector.kind === 'ollama') return '本地';
+  if (connector.kind === 'openai-compatible') return '兼容';
+  return '规划中';
+}
+
 export function SettingsPanel({ onClose }: SettingsPanelProps) {
   const { t, locale, setLocale } = useI18n();
   const [tab, setTab] = useState<Tab>('workflow');
@@ -50,6 +79,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
   const settings = useWorkspaceSettingsStore((s) => s.settings);
   const updateSettings = useWorkspaceSettingsStore((s) => s.updateSettings);
   const togglePlatform = useWorkspaceSettingsStore((s) => s.togglePlatform);
+  const runtime = useRuntimeStatus();
 
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('spark_geo_api_key') ?? '');
   const [model, setModel] = useState(() => localStorage.getItem('spark_geo_model') ?? 'gpt-4o-mini');
@@ -63,11 +93,30 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
     setTimeout(() => setSaved(false), 1800);
   };
 
-  const handleSaveModel = () => {
+  const persistModelFields = () => {
     localStorage.setItem('spark_geo_api_key', apiKey);
     localStorage.setItem('spark_geo_model', model);
     localStorage.setItem('spark_geo_base_url', baseUrl);
     localStorage.setItem('spark_geo_firecrawl_key', fcKey);
+  };
+
+  const handleSaveModel = async () => {
+    persistModelFields();
+    await runtime.rescan();
+    flashSaved();
+  };
+
+  const handleUseCustomModel = async () => {
+    persistModelFields();
+    if (apiKey.trim()) {
+      localStorage.setItem(RUNTIME_STORAGE_KEY, CUSTOM_RUNTIME_ID);
+      await runtime.rescan();
+    }
+    flashSaved();
+  };
+
+  const handleSelectRuntime = async (runtimeId: string) => {
+    await runtime.selectRuntime(runtimeId);
     flashSaved();
   };
 
@@ -223,9 +272,71 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
           )}
 
           {tab === 'models' && (
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="space-y-6">
+              <section className="space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-sm font-semibold text-spark-text">底层运行时</h3>
+                    <p className="mt-1 text-sm text-spark-muted">选择 SparkGEO 调用的模型底座，或在下方添加自定义模型。</p>
+                  </div>
+                  <button
+                    onClick={() => void runtime.rescan()}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-spark-border px-3 py-2 text-sm text-spark-muted hover:bg-gray-50"
+                  >
+                    <RefreshCcw size={14} />
+                    重新扫描
+                  </button>
+                </div>
+
+                <div className="grid gap-3 md:grid-cols-2">
+                  {runtime.connectors.map((connector) => {
+                    const selected = connector.id === runtime.selectedRuntimeId;
+                    const connecting = runtime.connectingRuntimeId === connector.id;
+                    return (
+                      <button
+                        key={connector.id}
+                        onClick={() => void handleSelectRuntime(connector.id)}
+                        disabled={!connector.available || connecting}
+                        className={`rounded-2xl border p-3 text-left transition-colors ${
+                          selected
+                            ? 'border-spark bg-spark-light'
+                            : connector.available
+                              ? 'border-spark-border bg-white hover:bg-gray-50'
+                              : 'border-spark-border bg-gray-50 opacity-70'
+                        }`}
+                      >
+                        <div className="mb-2 flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className={`rounded-lg p-1.5 ${selected ? 'bg-white text-spark' : 'bg-gray-100 text-spark-muted'}`}>
+                              <Cpu size={15} />
+                            </span>
+                            <div>
+                              <div className="text-sm font-semibold text-spark-text">{runtimeDisplayLabel(connector)}</div>
+                              <div className="mt-0.5 text-xs text-spark-muted">{connector.model}</div>
+                            </div>
+                          </div>
+                          {connecting ? (
+                            <Loader2 size={16} className="animate-spin text-spark" />
+                          ) : selected ? (
+                            <Check size={16} className="text-spark" />
+                          ) : null}
+                        </div>
+                        <div className="mb-2 flex items-center gap-1.5">
+                          <span className={`h-1.5 w-1.5 rounded-full ${connector.available ? 'bg-green-500' : 'bg-gray-300'}`} />
+                          <span className="text-[11px] text-spark-muted">
+                            {connector.available ? '可用' : '未连接'} · {runtimeKindLabel(connector)}
+                          </span>
+                        </div>
+                        <p className="text-xs leading-5 text-spark-muted">{runtimeDisplayMessage(connector)}</p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+
+              <div className="grid gap-6 md:grid-cols-2">
               <section className="space-y-4">
-                <h3 className="text-sm font-semibold text-spark-text">文本模型</h3>
+                <h3 className="text-sm font-semibold text-spark-text">自定义文本模型</h3>
                 <div>
                   <label className="mb-1 block text-sm font-medium text-spark-text">API Key</label>
                   <input
@@ -256,6 +367,17 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                     placeholder="https://api.openai.com/v1"
                   />
                 </div>
+                <button
+                  onClick={() => void handleUseCustomModel()}
+                  disabled={!apiKey.trim()}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-spark px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-40"
+                >
+                  <Cpu size={15} />
+                  保存并使用自定义模型
+                </button>
+                <p className="text-xs leading-5 text-spark-muted">
+                  自定义模型会作为一个可选择的底座出现在上方运行时列表里。
+                </p>
               </section>
 
               <section className="space-y-4">
@@ -314,6 +436,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                   </p>
                 )}
               </section>
+              </div>
             </div>
           )}
 
@@ -361,7 +484,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
         <div className="flex items-center justify-between border-t border-spark-border px-6 py-4">
           <span className="text-xs text-spark-muted">{saved ? '已保存' : '设置会即时生效，模型密钥需要点击保存'}</span>
           <button
-            onClick={handleSaveModel}
+            onClick={() => void handleSaveModel()}
             className="rounded-xl bg-spark px-5 py-2 text-sm font-medium text-white hover:bg-orange-600"
           >
             {saved ? '已保存' : '保存设置'}

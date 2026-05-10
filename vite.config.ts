@@ -160,14 +160,14 @@ async function scanRuntimeConnectors(env: RuntimeEnv): Promise<RuntimeConnector[
   const connectors: RuntimeConnector[] = [
     {
       id: 'local-demo',
-      label: 'Local demo runtime',
-      provider: 'local-demo',
-      model: 'demo',
-      models: ['demo'],
+      label: 'Built-in experience runtime',
+      provider: 'built-in',
+      model: '内置体验',
+      models: ['内置体验'],
       configured: true,
       available: true,
       kind: 'demo',
-      message: 'Built-in deterministic demo runtime. No API key required.',
+      message: 'Built-in deterministic runtime. No API key required.',
     },
   ];
 

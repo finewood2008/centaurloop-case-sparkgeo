@@ -63,12 +63,14 @@ stateDiagram-v2
 
 ## Runtime Model
 
-The app can run in two modes:
+The app can run on several runtime foundations:
 
-- **Demo mode**: deterministic local responses for product walkthroughs.
-- **Real model mode**: OpenAI-compatible chat completion API through user settings or environment variables.
+- **Built-in experience runtime**: deterministic local responses for product walkthroughs without external credentials.
+- **Environment runtime**: OpenAI-compatible chat completion API through `.env.local`.
+- **Local runtime**: Ollama or LM Studio-style local servers.
+- **Custom runtime**: an OpenAI-compatible model added from Settings -> Model and Integrations.
 
-The runtime adapter is intentionally thin so the model provider can be replaced without changing the loop engine.
+The runtime adapter is intentionally thin so the model provider can be replaced without changing the loop engine. Runtime selection is part of Settings rather than a floating control.
 
 ## Memory Model
 
@@ -181,12 +183,14 @@ stateDiagram-v2
 
 ## Runtime 模型
 
-应用支持两种模式：
+应用支持多种运行时底座：
 
-- **Demo 模式**：用于产品演示的确定性本地响应。
-- **真实模型模式**：通过用户设置或环境变量接入 OpenAI-compatible chat completion API。
+- **内置体验运行时**：无需外部凭据，用确定性本地响应支撑产品走查。
+- **环境变量运行时**：通过 `.env.local` 接入 OpenAI-compatible chat completion API。
+- **本地运行时**：Ollama 或 LM Studio 这类本地服务。
+- **自定义运行时**：在设置里的“模型与集成”添加 OpenAI-compatible 模型。
 
-Runtime adapter 故意保持轻量，使模型服务可以替换，而不影响闭环引擎。
+Runtime adapter 故意保持轻量，使模型服务可以替换，而不影响闭环引擎。运行时选择已经整合进设置，不再使用右下角悬浮控制。
 
 ## 记忆模型
 

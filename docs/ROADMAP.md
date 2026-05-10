@@ -13,7 +13,7 @@ Status: complete enough for local demonstration.
 - Manual publishing workspace
 - Published URL feedback analysis
 - Cycle review and memory confirmation
-- Demo runtime and OpenAI-compatible runtime adapter
+- Built-in experience runtime and OpenAI-compatible runtime adapter
 
 ## Phase 2: Backend Foundation
 
@@ -65,7 +65,7 @@ Status: complete enough for local demonstration.
 - 人工发布工作台
 - 发布 URL 反馈分析
 - 周期复盘和记忆确认
-- Demo runtime 与 OpenAI-compatible runtime adapter
+- 内置体验运行时与 OpenAI-compatible runtime adapter
 
 ## 阶段 2：后端基础
 

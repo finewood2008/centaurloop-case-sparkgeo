@@ -5,7 +5,6 @@ import { useLoopStore } from '../core/loopStore';
 import { SPARK_GEO_LOOP_CONFIG } from '../core/loopConfigs';
 import { ChatPanel } from './ChatPanel';
 import { SettingsPanel } from './SettingsPanel';
-import { RuntimeDropdown } from './RuntimeDropdown';
 import { MemoryPanel } from './MemoryPanel';
 import { ArticlePublisher } from './ArticlePublisher';
 
@@ -53,9 +52,6 @@ export function SparkShell() {
         </div>
         <MemoryPanel />
       </div>
-
-      {/* Runtime Dropdown */}
-      <RuntimeDropdown />
 
       {/* Panels */}
       {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
