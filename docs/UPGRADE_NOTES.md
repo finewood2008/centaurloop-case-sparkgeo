@@ -1,5 +1,12 @@
 # Upgrade Notes
 
+## 2026-05-11 — Image Engine Setting
+
+- Added an image generation engine selector under **Settings -> Model and Integrations**.
+- Moved image model naming into the same model/integration area so image provider and model are configured together.
+- Kept image style, aspect ratio, and prompt preference controls under **Settings -> Image Generation**.
+- Article image prompts and publishing-page metadata now include both engine and model.
+
 ## 2026-05-11 — Memory Workspace Redesign
 
 This upgrade reshapes the right-side memory workspace around how an operator actually uses SparkGEO during a loop.
@@ -30,6 +37,13 @@ This upgrade reshapes the right-side memory workspace around how an operator act
 ---
 
 # 升级说明
+
+## 2026-05-11 — 图片引擎设置
+
+- 在 **设置 -> 模型与集成** 中增加图片生成引擎选择。
+- 图片模型名称也放到同一个模型/集成区域，让图片供应商和模型一起配置。
+- 图片风格、比例和提示词偏好继续保留在 **设置 -> 图片生成**。
+- 文章配图提示词和发布页元数据现在会同时显示引擎和模型。
 
 ## 2026-05-11 — 记忆工作区重构
 

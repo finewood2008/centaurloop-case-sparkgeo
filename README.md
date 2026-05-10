@@ -15,7 +15,7 @@ This repository is intentionally built as a complete product prototype rather th
 - **Article image assist**: the publishing page can generate a cover preview and image prompt from the article and workspace image settings.
 - **AI feedback crawling**: after publishing, the user pastes article links and the system reads public pages to analyze performance signals.
 - **Live memory workspace**: current-cycle signals, a wiki-style long-term memory graph, and the editable company profile stay visible beside the conversation.
-- **Workspace settings**: platform selection, UI/output language, writing style, CTA style, emoji level, image model, and image style are configurable.
+- **Workspace settings**: platform selection, UI/output language, writing style, CTA style, emoji level, image engine/model, and image style are configurable.
 - **Runtime flexibility**: supports built-in demo mode, OpenAI-compatible endpoints, Ollama, and LM Studio-style local servers.
 
 ## Product Flow
@@ -193,7 +193,7 @@ SparkGEO 是 **CentaurLoop** 的第一个公开案例项目：一个人机协同
 - **品牌记忆**：品牌档案和偏好会存入记忆，并注入后续规划与生成。
 - **文章配图辅助**：发布页可以根据文章和图片设置生成封面预览与图片提示词。
 - **实时记忆工作区**：本轮动态记忆、长期记忆 wiki 关系图、企业档案编辑和资料导入会常驻显示在对话右侧。
-- **工作台设置**：可配置发布平台、界面/输出语言、语言风格、CTA、Emoji、图片模型和图片风格。
+- **工作台设置**：可配置发布平台、界面/输出语言、语言风格、CTA、Emoji、图片生成引擎/模型和图片风格。
 - **灵活运行时**：支持内置 demo 模式、OpenAI-compatible 接口、Ollama、LM Studio 本地服务。
 
 ## 产品流程

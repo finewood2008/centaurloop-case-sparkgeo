@@ -6,6 +6,7 @@ import {
   CONTENT_DEPTH_OPTIONS,
   CTA_STYLE_OPTIONS,
   EMOJI_LEVEL_OPTIONS,
+  IMAGE_ENGINE_OPTIONS,
   IMAGE_RATIO_OPTIONS,
   IMAGE_STYLE_OPTIONS,
   PLATFORM_OPTIONS,
@@ -258,6 +259,33 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
               </section>
 
               <section className="space-y-4">
+                <h3 className="text-sm font-semibold text-spark-text">图片生成模型</h3>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-spark-text">图片生成引擎</label>
+                  <select
+                    value={settings.imageEngine}
+                    onChange={(event) => updateSettings({ imageEngine: event.target.value })}
+                    className="w-full rounded-xl border border-spark-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
+                  >
+                    {IMAGE_ENGINE_OPTIONS.map((item) => <option key={item}>{item}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-spark-text">图片模型名称</label>
+                  <input
+                    type="text"
+                    value={settings.imageModel}
+                    onChange={(event) => updateSettings({ imageModel: event.target.value })}
+                    className="w-full rounded-xl border border-spark-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
+                    placeholder="gpt-image-2 / flux-pro / stable-diffusion-xl"
+                  />
+                </div>
+                <p className="text-sm leading-6 text-spark-muted">
+                  这里配置图片生成的供应商或兼容引擎；风格、比例和提示词要求放在“图片生成”页。
+                </p>
+              </section>
+
+              <section className="space-y-4">
                 <h3 className="text-sm font-semibold text-spark-text">网页抓取集成</h3>
                 <p className="text-sm leading-6 text-spark-muted">
                   Firecrawl Key 用于在记忆板块抓取官网或资料页；没有配置时，系统会尝试使用基础网页读取。
@@ -291,17 +319,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
 
           {tab === 'image' && (
             <div className="space-y-5">
-              <div className="grid gap-4 md:grid-cols-3">
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-spark-text">图片生成模型</label>
-                  <input
-                    type="text"
-                    value={settings.imageModel}
-                    onChange={(event) => updateSettings({ imageModel: event.target.value })}
-                    className="w-full rounded-xl border border-spark-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
-                    placeholder="gpt-image-2"
-                  />
-                </div>
+              <div className="grid gap-4 md:grid-cols-2">
                 <div>
                   <label className="mb-1 block text-sm font-medium text-spark-text">图片风格</label>
                   <select
@@ -334,7 +352,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                 />
               </div>
               <div className="rounded-xl bg-gray-50 p-3 text-sm leading-6 text-spark-muted">
-                当前版本会在文章发布页生成可预览的封面图和图片提示词；后续接入真实图片 API 时会复用这里的模型与风格设置。
+                当前版本会在文章发布页生成可预览的封面图和图片提示词；图片生成引擎和模型名称请在“模型与集成”里配置。
               </div>
             </div>
           )}

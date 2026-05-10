@@ -10,6 +10,7 @@ export interface WorkspaceSettings {
   contentDepth: string;
   ctaStyle: string;
   emojiLevel: string;
+  imageEngine: string;
   imageModel: string;
   imageStyle: string;
   imageRatio: string;
@@ -69,6 +70,16 @@ export const IMAGE_STYLE_OPTIONS = [
   '赛博霓虹',
 ];
 
+export const IMAGE_ENGINE_OPTIONS = [
+  'OpenAI Images',
+  'Flux / Black Forest Labs',
+  'Stable Diffusion',
+  'Midjourney',
+  'Ideogram',
+  'Replicate',
+  '自定义 OpenAI-compatible',
+];
+
 export const IMAGE_RATIO_OPTIONS = [
   '4:3',
   '1:1',
@@ -83,6 +94,7 @@ export const DEFAULT_WORKSPACE_SETTINGS: WorkspaceSettings = {
   contentDepth: '标准深度',
   ctaStyle: '自然关注',
   emojiLevel: '适中',
+  imageEngine: 'OpenAI Images',
   imageModel: 'gpt-image-2',
   imageStyle: '现代科技',
   imageRatio: '4:3',
@@ -113,6 +125,18 @@ export const useWorkspaceSettingsStore = create<WorkspaceSettingsState>()(
     }),
     {
       name: 'spark_geo_workspace_settings',
+      merge: (persisted, current) => {
+        const state = persisted as Partial<WorkspaceSettingsState> | undefined;
+        return {
+          ...current,
+          ...state,
+          settings: {
+            ...DEFAULT_WORKSPACE_SETTINGS,
+            ...current.settings,
+            ...state?.settings,
+          },
+        };
+      },
     },
   ),
 );
@@ -125,6 +149,7 @@ export function formatWorkspacePreferences(settings: WorkspaceSettings): string 
     `内容深度：${settings.contentDepth}`,
     `CTA 方式：${settings.ctaStyle}`,
     `Emoji 使用：${settings.emojiLevel}`,
+    `配图引擎：${settings.imageEngine}`,
     `配图模型：${settings.imageModel}`,
     `配图风格：${settings.imageStyle}`,
     `图片比例：${settings.imageRatio}`,

@@ -3,6 +3,7 @@ import type { WorkspaceSettings } from './workspaceSettings';
 export interface ArticleImageAsset {
   dataUrl: string;
   prompt: string;
+  engine: string;
   model: string;
   style: string;
 }
@@ -58,6 +59,7 @@ export function generateArticleImageAsset(params: {
     `Aspect ratio: ${params.settings.imageRatio}.`,
     `Visual direction: clean, publish-ready, readable headline, no messy text, strong focal point.`,
     params.settings.imagePromptHint ? `Extra requirements: ${params.settings.imagePromptHint}` : '',
+    `Image engine: ${params.settings.imageEngine}.`,
     `Use model: ${params.settings.imageModel}.`,
   ].filter(Boolean).join('\n');
 
@@ -73,13 +75,14 @@ export function generateArticleImageAsset(params: {
   <rect x="56" y="56" width="${width - 112}" height="${height - 112}" rx="36" fill="none" stroke="${palette.accent}" stroke-width="5" opacity="0.45"/>
   <text x="80" y="128" font-family="Inter, Arial, sans-serif" font-size="34" font-weight="700" fill="${palette.accent}">${escapeXml(params.appName)}</text>
   ${lineSvg}
-  <text x="80" y="${height - 120}" font-family="Inter, Arial, sans-serif" font-size="30" fill="${palette.sub}">${escapeXml(params.settings.imageStyle)} · ${escapeXml(params.settings.imageModel)}</text>
+  <text x="80" y="${height - 120}" font-family="Inter, Arial, sans-serif" font-size="30" fill="${palette.sub}">${escapeXml(params.settings.imageStyle)} · ${escapeXml(params.settings.imageEngine)}</text>
   <rect x="80" y="${height - 82}" width="180" height="10" rx="5" fill="${palette.accent}"/>
 </svg>`.trim();
 
   return {
     dataUrl: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`,
     prompt,
+    engine: params.settings.imageEngine,
     model: params.settings.imageModel,
     style: params.settings.imageStyle,
   };

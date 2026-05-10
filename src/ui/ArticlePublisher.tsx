@@ -175,7 +175,7 @@ export function ArticlePublisher({ cycleId, onClose, onComplete }: ArticlePublis
                       className="w-full rounded-xl border border-spark-border"
                     />
                     <p className="mt-2 text-xs leading-5 text-spark-muted">
-                      {selectedImageAsset.model} · {selectedImageAsset.style}
+                      {selectedImageAsset.engine} · {selectedImageAsset.model} · {selectedImageAsset.style}
                     </p>
                   </div>
                 )}
