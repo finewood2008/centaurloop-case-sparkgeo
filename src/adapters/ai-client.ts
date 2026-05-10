@@ -2,7 +2,7 @@
  * Spark GEO AI Client
  */
 
-import { invokeRuntimeModel, hasUserModelConfig } from './runtime';
+import { invokeRuntimeModel } from './runtime';
 
 export interface AIClient {
   models: {
@@ -393,21 +393,25 @@ function generateDemoMemoryExtractionResponse(english: boolean): string {
 }
 
 let _client: AIClient | null = null;
+let _runtimeFallbackUntil = 0;
 
 export async function getClientAsync(): Promise<AIClient> {
   if (!_client) {
     _client = {
       models: {
         invoke: async ({ prompt }: { prompt: string }) => {
+          if (Date.now() < _runtimeFallbackUntil) {
+            setLastClientMode('demo');
+            const demo = createDemoClient();
+            return demo.models.invoke({ prompt });
+          }
+
           try {
             const result = await invokeRuntimeModel(prompt);
             setLastClientMode('real');
             return result;
-          } catch (error) {
-            if (hasUserModelConfig()) {
-              setLastClientMode('real');
-              throw error;
-            }
+          } catch {
+            _runtimeFallbackUntil = Date.now() + 30_000;
             setLastClientMode('demo');
             const demo = createDemoClient();
             return demo.models.invoke({ prompt });

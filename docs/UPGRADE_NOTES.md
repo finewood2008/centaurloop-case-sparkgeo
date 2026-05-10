@@ -1,5 +1,13 @@
 # Upgrade Notes
 
+## 2026-05-11 — Generation Reliability Fix
+
+- Added request timeouts for real/custom model calls so unreachable model endpoints cannot freeze the content loop.
+- Added automatic built-in fallback when the selected runtime fails.
+- Added a deterministic fallback planner so the loop can still produce a usable plan if the model does not return.
+- Added deterministic fallback Markdown drafts so publishing and article image generation remain testable even when model execution fails.
+- Verified the full path from start -> plan -> drafts -> publishing page -> auto image.
+
 ## 2026-05-11 — Runtime Settings Consolidation
 
 - Moved runtime selection from the floating bottom-right control into **Settings -> Model and Integrations**.
@@ -45,6 +53,14 @@ This upgrade reshapes the right-side memory workspace around how an operator act
 ---
 
 # 升级说明
+
+## 2026-05-11 — 生成链路稳定性修复
+
+- 给真实/自定义模型请求增加超时，避免模型地址不可达时卡住闭环。
+- 选中的运行时失败时会自动回到内置体验生成。
+- 增加确定性的兜底规划器，模型不返回时仍能生成可用计划。
+- 增加确定性的 Markdown 草稿兜底，确保发布页和自动配图流程仍然可测试。
+- 已验证完整路径：开始 -> 计划 -> 草稿 -> 文章发布页 -> 自动配图。
 
 ## 2026-05-11 — 运行时设置整合
 

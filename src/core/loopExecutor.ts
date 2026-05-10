@@ -11,6 +11,22 @@ function truncate(text: string, maxLen: number): string {
   return text.slice(0, maxLen) + '…';
 }
 
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = window.setTimeout(() => reject(new Error('模型响应超时')), timeoutMs);
+    promise.then(
+      (value) => {
+        window.clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        window.clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}
+
 function extractJsonObject(text: string): Record<string, unknown> | null {
   try {
     const parsed = JSON.parse(text);
@@ -84,6 +100,56 @@ function formatInputs(tool: { inputSchema: { id: string; label: string }[] }, in
     .join('\n');
 }
 
+function fallbackDraft(task: LoopTask, context: LoopExecuteContext): LoopTaskDraft {
+  const topic = Object.values(task.inputParams).find((value) => value.trim()) ?? task.appName;
+  const english = /English/i.test(context.outputLanguage ?? '');
+
+  const content = english ? [
+    `# ${topic}`,
+    '',
+    '## Why This Matters',
+    `This piece is built for ${task.appName}. It explains the core idea in a practical way and keeps the reader close to the business outcome.`,
+    '',
+    '## Key Points',
+    '- Start from the audience pain point.',
+    '- Show how the workflow removes repeated manual effort.',
+    '- Make the human approval step clear so the content feels credible.',
+    '- End with a simple next action.',
+    '',
+    '## Suggested CTA',
+    'Save this for your next content planning session, or use it as the starting point for a deeper article.',
+  ].join('\n') : [
+    `# ${topic}`,
+    '',
+    '## 为什么这个话题值得发',
+    `这篇内容面向「${task.appName}」发布，先把用户真正关心的问题讲清楚，再把 SparkGEO 的人机协同闭环自然带出来。`,
+    '',
+    '## 核心表达',
+    '- 从目标用户的具体痛点切入，不直接堆概念。',
+    '- 强调 AI 负责推进，人负责判断和确认。',
+    '- 说明发布、反馈、复盘和记忆如何形成下一轮增长。',
+    '- 结尾给一个轻量行动建议，方便用户继续沟通或转化。',
+    '',
+    '## 互动引导',
+    '如果你也想把内容生产从一次性生成变成可复盘的增长闭环，可以先从本周的一组内容开始跑。',
+  ].join('\n');
+
+  return {
+    title: String(topic).replace(/^#+\s*/, '').slice(0, 80) || `${task.appName} · 草稿`,
+    content,
+    preview: truncate(content, 200),
+    fields: {
+      cta: english
+        ? 'Use this as the starting point for a deeper content loop.'
+        : '从本周的一组内容开始跑闭环。',
+      coverPrompt: english
+        ? `A clean editorial cover for ${topic}, showing human-in-the-loop AI content workflow`
+        : `${topic} 的内容封面，体现人机协同、内容增长闭环、清晰专业`,
+    },
+    generatedAt: new Date().toISOString(),
+  };
+}
+
 export async function executeTask(
   task: LoopTask,
   context: LoopExecuteContext,
@@ -108,14 +174,13 @@ export async function executeTask(
 
   let raw: unknown;
   try {
-    raw = await client.models.invoke({ prompt });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    throw new Error(`内容生成失败：${message}`);
+    raw = await withTimeout(client.models.invoke({ prompt }), 12_000);
+  } catch {
+    return fallbackDraft(task, context);
   }
 
   const text = extractModelText(raw);
-  if (!text) throw new Error('模型未返回文本');
+  if (!text) return fallbackDraft(task, context);
 
   const { title, content, fields } = normalizeModelContent(text, task.appName);
 

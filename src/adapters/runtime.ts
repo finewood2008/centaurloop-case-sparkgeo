@@ -191,13 +191,18 @@ export function hasUserModelConfig(): boolean {
 
 export async function invokeRuntimeModel(prompt: string): Promise<{ text: string; provider: string; model: string; runtimeId?: string }> {
   const userConfig = readUserModelConfig();
+  const runtimeId = readSelectedRuntimeId();
+
+  if (!userConfig && (!runtimeId || runtimeId === 'local-demo' || runtimeId === CUSTOM_RUNTIME_ID)) {
+    throw new Error('Built-in runtime selected.');
+  }
 
   const response = await fetch('/api/model', {
     method: 'POST',
     headers: { 'content-type': 'application/json', accept: 'application/json' },
     body: JSON.stringify({
       prompt,
-      runtimeId: readSelectedRuntimeId(),
+      runtimeId,
       ...(userConfig && {
         apiKey: userConfig.apiKey,
         baseUrl: userConfig.baseUrl,

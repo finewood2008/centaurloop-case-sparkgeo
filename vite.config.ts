@@ -92,6 +92,16 @@ async function fetchJsonWithTimeout(
   }
 }
 
+async function fetchWithTimeout(url: string, timeoutMs: number, init: RequestInit): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 function extractOpenAIModelIds(data: unknown): string[] {
   const records = Array.isArray((data as { data?: unknown[] } | null)?.data)
     ? (data as { data: Array<{ id?: string }> }).data
@@ -449,7 +459,7 @@ function sparkRuntimeApiPlugin(env: RuntimeEnv): Plugin {
               authorization: `Bearer ${userApiKey}`,
             };
 
-            const upstream = await fetch(`${finalBaseUrl}/chat/completions`, {
+            const upstream = await fetchWithTimeout(`${finalBaseUrl}/chat/completions`, 8000, {
               method: 'POST',
               headers,
               body: JSON.stringify({
@@ -492,7 +502,7 @@ function sparkRuntimeApiPlugin(env: RuntimeEnv): Plugin {
           }
 
           if (selected.kind === 'ollama') {
-            const upstream = await fetch(`${selected.endpoint}/api/chat`, {
+            const upstream = await fetchWithTimeout(`${selected.endpoint}/api/chat`, 8000, {
               method: 'POST',
               headers: { 'content-type': 'application/json' },
               body: JSON.stringify({
@@ -537,7 +547,7 @@ function sparkRuntimeApiPlugin(env: RuntimeEnv): Plugin {
           const headers: Record<string, string> = { 'content-type': 'application/json' };
           if (apiKey) headers.authorization = `Bearer ${apiKey}`;
 
-          const upstream = await fetch(`${baseUrl}/chat/completions`, {
+          const upstream = await fetchWithTimeout(`${baseUrl}/chat/completions`, 8000, {
             method: 'POST',
             headers,
             body: JSON.stringify({

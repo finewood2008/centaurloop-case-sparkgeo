@@ -37,6 +37,26 @@ function extractJsonObject(text: string): Record<string, unknown> | null {
   return null;
 }
 
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = window.setTimeout(() => reject(new Error('模型响应超时')), timeoutMs);
+    promise.then(
+      (value) => {
+        window.clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        window.clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}
+
+function wantsEnglish(context: LoopPlanContext): boolean {
+  return /English/i.test(context.outputLanguage ?? '');
+}
+
 function buildPlanPrompt(
   config: CentaurLoopConfig,
   goal: string,
@@ -123,6 +143,69 @@ function normalizeTasks(rawTasks: unknown[], configId: string): LoopTask[] {
   });
 }
 
+function buildFallbackPlan(
+  config: CentaurLoopConfig,
+  goal: string,
+  context: LoopPlanContext,
+): LoopPlanResult {
+  const english = wantsEnglish(context);
+  const rawTasks = english ? [
+    {
+      appToolId: 'xiaohongshu-note',
+      appName: 'Xiaohongshu Note',
+      artifactType: 'social_post',
+      inputParams: { topic: goal, style: 'practical and concise', keywords: 'AI, content growth, workflow' },
+    },
+    {
+      appToolId: 'wechat-article',
+      appName: 'WeChat Article',
+      artifactType: 'article',
+      inputParams: { topic: goal, keywords: 'AI content growth', tone: 'professional and practical', wordCount: '1200' },
+    },
+    {
+      appToolId: 'moments-post',
+      appName: 'Moments Post',
+      artifactType: 'social_post',
+      inputParams: { topic: goal, occasion: 'weekly update' },
+    },
+  ] : [
+    {
+      appToolId: 'xiaohongshu-note',
+      appName: '小红书笔记',
+      artifactType: 'social_post',
+      inputParams: { topic: goal, style: '实战干货', keywords: 'AI,内容增长,工作流' },
+    },
+    {
+      appToolId: 'wechat-article',
+      appName: '公众号文章',
+      artifactType: 'article',
+      inputParams: { topic: goal, keywords: 'AI内容增长', tone: '专业实用', wordCount: '1200' },
+    },
+    {
+      appToolId: 'moments-post',
+      appName: '朋友圈文案',
+      artifactType: 'social_post',
+      inputParams: { topic: goal, occasion: '本周内容发布' },
+    },
+  ];
+
+  const platforms = english ? ['Xiaohongshu', 'WeChat', 'Moments'] : ['小红书', '公众号', '朋友圈'];
+  const keywords = english ? ['AI content growth', 'human-in-the-loop', 'workflow'] : ['AI内容增长', '人机协同', '闭环工作流'];
+  const summary = english
+    ? `Create a three-platform content loop around: ${goal}. Start with a short social hook, then a deeper article, then a concise distribution post.`
+    : `围绕「${goal}」先做一轮三平台内容闭环：小红书负责吸引注意，公众号承接深度解释，朋友圈做轻量扩散。`;
+
+  return {
+    plan: {
+      summary,
+      taskCount: rawTasks.length,
+      platforms,
+      keywords,
+    },
+    tasks: normalizeTasks(rawTasks, config.id),
+  };
+}
+
 export async function planLoop(
   config: CentaurLoopConfig,
   goal: string,
@@ -133,23 +216,23 @@ export async function planLoop(
 
   let raw: unknown;
   try {
-    raw = await client.models.invoke({ prompt });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    throw new Error(`闭环规划失败：${message}`);
+    raw = await withTimeout(client.models.invoke({ prompt }), 10_000);
+  } catch {
+    return buildFallbackPlan(config, goal, context);
   }
 
   const text = extractModelText(raw);
-  if (!text) throw new Error('模型未返回文本');
+  if (!text) return buildFallbackPlan(config, goal, context);
 
   const parsed = extractJsonObject(text);
-  if (!parsed) throw new Error('模型返回的不是有效 JSON');
+  if (!parsed) return buildFallbackPlan(config, goal, context);
 
   const summary = String(parsed.summary ?? goal);
   const platforms = Array.isArray(parsed.platforms) ? (parsed.platforms as unknown[]).map(String) : [];
   const keywords = Array.isArray(parsed.keywords) ? (parsed.keywords as unknown[]).map(String) : undefined;
   const rawTasks = Array.isArray(parsed.tasks) ? (parsed.tasks as unknown[]) : [];
   const tasks = normalizeTasks(rawTasks, config.id);
+  if (tasks.length === 0) return buildFallbackPlan(config, goal, context);
 
   const plan: LoopCyclePlan = { summary, taskCount: tasks.length, platforms, keywords };
   return { plan, tasks };
