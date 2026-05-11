@@ -70,7 +70,7 @@ function OptionButton({
 
 function runtimeDisplayLabel(connector: RuntimeConnector): string {
   if (connector.id === 'local-demo') return '内置体验运行时';
-  if (connector.id === CUSTOM_RUNTIME_ID) return 'BYOK OpenAI-compatible 模型';
+  if (connector.id === CUSTOM_RUNTIME_ID) return 'BYOK 文本运行时';
   return connector.label;
 }
 
@@ -78,8 +78,8 @@ function runtimeDisplayMessage(connector: RuntimeConnector): string {
   if (connector.id === 'local-demo') return '无需密钥，用于首次体验和离线演示。';
   if (connector.id === CUSTOM_RUNTIME_ID) {
     return connector.available
-      ? '使用 BYOK 页的文本模型配置作为模型底座。'
-      : '在 BYOK 页填写 API Key、Base URL 和模型名称后可启用。';
+      ? '只读取 BYOK 文本生成配置，不使用图片 Key。'
+      : '在 BYOK 页填写文本 API Key、Base URL 和模型名称后可启用。';
   }
   return connector.message.replace(/\bdemo\b/gi, 'built-in');
 }
@@ -302,7 +302,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <h3 className="text-sm font-semibold text-spark-text">底层运行时</h3>
-                    <p className="mt-1 text-sm text-spark-muted">选择 SparkGEO 调用的模型底座；BYOK 的 Key、文本模型和图片模型在 BYOK 页配置。</p>
+                    <p className="mt-1 text-sm text-spark-muted">选择 SparkGEO 调用的文本模型底座；BYOK 文本 Key 和图片 Key 在 BYOK 页分开配置。</p>
                   </div>
                   <button
                     onClick={() => void runtime.rescan()}
@@ -398,7 +398,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                   <div>
                     <h3 className="text-sm font-semibold tracking-wide text-spark-text">BYOK 文本生成</h3>
                     <p className="mt-1 text-sm leading-6 text-spark-muted">
-                      Bring Your Own Key。把你自己的 OpenAI-compatible Key 和文本模型作为 SparkGEO 的底层运行时。
+                      Bring Your Own Key。把你自己的 OpenAI-compatible 文本 Key 和文本模型作为 SparkGEO 的底层运行时；这套 Key 不会被图片生成复用。
                     </p>
                   </div>
                   <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-medium text-spark-muted">
@@ -407,7 +407,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                 </div>
                 <div className="grid gap-4 md:grid-cols-3">
                   <div>
-                    <label className="mb-1 block text-sm font-medium text-spark-text">API Key</label>
+                    <label className="mb-1 block text-sm font-medium text-spark-text">文本 API Key</label>
                     <input
                       type="password"
                       value={apiKey}
@@ -431,7 +431,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                     </datalist>
                   </div>
                   <div>
-                    <label className="mb-1 block text-sm font-medium text-spark-text">Base URL</label>
+                    <label className="mb-1 block text-sm font-medium text-spark-text">文本 Base URL</label>
                     <input
                       type="text"
                       value={baseUrl}
@@ -458,7 +458,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                 <div>
                   <h3 className="text-sm font-semibold tracking-wide text-spark-text">BYOK 图片生成</h3>
                   <p className="mt-1 text-sm leading-6 text-spark-muted">
-                    图片生成也采用 BYOK。这里保存图片供应商、Key、Base URL 和模型名称；当前发布页会读取供应商和模型用于预览与提示词。
+                    图片生成使用独立 Key，可以和文本 BYOK 来自不同供应商。这里保存图片供应商、图片 Key、Base URL 和模型名称。
                   </p>
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
@@ -515,7 +515,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                   保存 BYOK 图片生成设置
                 </button>
                 <p className="text-xs leading-5 text-spark-muted">
-                  当前版本的发布页先生成本地封面预览和可复制图片提示词；真实图片 API 接入时会读取这组 BYOK 配置。
+                  当前版本的发布页先生成本地封面预览和可复制图片提示词；真实图片 API 接入时会读取这组图片 BYOK 配置，不读取文本 BYOK Key。
                 </p>
               </section>
             </div>
@@ -556,7 +556,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                 />
               </div>
               <div className="rounded-xl bg-gray-50 p-3 text-sm leading-6 text-spark-muted">
-                当前版本会在文章发布页生成可预览的封面图和图片提示词；图片生成引擎、模型和 Key 请在“BYOK”页配置。
+                当前版本会在文章发布页生成可预览的封面图和图片提示词；图片生成引擎、模型和独立图片 Key 请在“BYOK”页配置。
               </div>
             </div>
           )}

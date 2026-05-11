@@ -4,7 +4,8 @@
 
 - Added **BYOK** as its own Settings tab.
 - Moved text-generation API key, base URL, and model selection from Model and Integrations into the dedicated BYOK tab.
-- Moved image-generation engine/model settings into the BYOK tab and added image API key plus image Base URL fields.
+- Moved image-generation engine/model settings into the BYOK tab and added a separate image API key plus image Base URL.
+- Clarified that text-generation and image-generation BYOK credentials can come from different providers and are never implicitly shared.
 - Kept image style, aspect ratio, and prompt preferences in **Settings -> Image Generation**.
 - Model and Integrations now focuses on runtime foundation selection and Firecrawl integration.
 
@@ -26,12 +27,14 @@
 ## 2026-05-11 — Runtime Settings Consolidation
 
 - Moved runtime selection from the floating bottom-right control into **Settings -> Model and Integrations**.
-- Added runtime foundation cards for built-in experience, environment-configured OpenAI-compatible models, Ollama, LM Studio, and BYOK OpenAI-compatible models.
-- Added the BYOK model flow where users can save API key, base URL, and model name, then use that configuration as the active runtime foundation.
+- Added runtime foundation cards for built-in experience, environment-configured OpenAI-compatible models, Ollama, LM Studio, and BYOK text models.
+- Added the BYOK text model flow where users can save text API key, base URL, and model name, then use that configuration as the active runtime foundation.
 - Removed the floating runtime dropdown from the main workspace.
 - Replaced user-facing demo wording with built-in experience/runtime wording.
 
 ## 2026-05-11 — Image Engine Setting
+
+Superseded by **Dedicated BYOK Tab and Image BYOK** above for the current settings layout.
 
 - Added an image generation engine selector under **Settings -> Model and Integrations**.
 - Moved image model naming into the same model/integration area so image provider and model are configured together.
@@ -73,7 +76,8 @@ This upgrade reshapes the right-side memory workspace around how an operator act
 
 - 在设置中把 **BYOK** 拆成独立标签页。
 - 文本生成的 API Key、Base URL 和模型选择从“模型与集成”迁移到独立 BYOK 标签页。
-- 图片生成的引擎/模型设置也迁移到 BYOK 标签页，并增加图片 API Key 与图片 Base URL 字段。
+- 图片生成的引擎/模型设置也迁移到 BYOK 标签页，并增加独立的图片 API Key 与图片 Base URL 字段。
+- 明确文本生成和图片生成的 BYOK 凭据可以来自不同供应商，不会隐式共用。
 - 图片风格、比例和提示词偏好继续保留在 **设置 -> 图片生成**。
 - “模型与集成”现在聚焦底层运行时选择和 Firecrawl 集成。
 
@@ -95,12 +99,14 @@ This upgrade reshapes the right-side memory workspace around how an operator act
 ## 2026-05-11 — 运行时设置整合
 
 - 把右下角悬浮运行时选择整合进 **设置 -> 模型与集成**。
-- 增加运行时底座卡片：内置体验、环境变量 OpenAI-compatible、Ollama、LM Studio、BYOK OpenAI-compatible。
-- 增加 BYOK 模型流程，用户可以保存 API Key、Base URL 和模型名称，并直接把它设为当前运行时底座。
+- 增加运行时底座卡片：内置体验、环境变量 OpenAI-compatible、Ollama、LM Studio、BYOK 文本模型。
+- 增加 BYOK 文本模型流程，用户可以保存文本 API Key、Base URL 和模型名称，并直接把它设为当前运行时底座。
 - 移除主界面右下角的运行时下拉入口。
 - 用户界面不再显示 demo 字样，统一改为内置体验/运行时表述。
 
 ## 2026-05-11 — 图片引擎设置
+
+当前设置布局已由上方 **独立 BYOK 标签页与图片 BYOK** 取代。
 
 - 在 **设置 -> 模型与集成** 中增加图片生成引擎选择。
 - 图片模型名称也放到同一个模型/集成区域，让图片供应商和模型一起配置。

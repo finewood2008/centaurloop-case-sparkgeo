@@ -47,7 +47,7 @@ flowchart LR
 | Feedback form | Accepts published article URLs and runs AI-powered feedback extraction. |
 | Memory workspace | A right-side live panel ordered by current-cycle memory, all-memory wiki graph, then company profile editing and imports. |
 | Runtime settings | Lets users choose the underlying runtime foundation. |
-| BYOK settings | Keeps text-generation and image-generation API keys, base URLs, and model names in a dedicated BYOK tab. |
+| BYOK settings | Keeps separate text-generation and image-generation API keys, base URLs, and model names in a dedicated BYOK tab. |
 
 ## Architecture
 
@@ -139,7 +139,7 @@ SPARK_MODEL_API_KEY=your_key_here
 SPARK_MODEL_NAME=gpt-4o-mini
 ```
 
-You can also choose Ollama, LM Studio, environment-based OpenAI-compatible runtimes, or configure BYOK inside **Settings -> BYOK** with your own text and image API keys, base URLs, and model names.
+You can also choose Ollama, LM Studio, environment-based OpenAI-compatible runtimes, or configure BYOK inside **Settings -> BYOK** with separate text and image API keys, base URLs, and model names.
 
 ## Firecrawl and Published Link Feedback
 
@@ -226,7 +226,7 @@ flowchart LR
 | 反馈表单 | 粘贴已发布文章 URL，由 AI 抓取并分析反馈。 |
 | 记忆工作区 | 常驻右侧，按本轮动态记忆、全部记忆 wiki 图谱、企业档案编辑与导入三个层级组织。 |
 | 运行时设置 | 在设置中选择底层模型运行时。 |
-| BYOK 设置 | 单独的 BYOK 标签页集中管理文本生成和图片生成的 API Key、Base URL 和模型名称。 |
+| BYOK 设置 | 单独的 BYOK 标签页集中管理文本生成和图片生成两套独立的 API Key、Base URL 和模型名称。 |
 
 ## 架构
 
@@ -318,7 +318,7 @@ SPARK_MODEL_API_KEY=your_key_here
 SPARK_MODEL_NAME=gpt-4o-mini
 ```
 
-也可以在 **设置 -> 模型与集成** 中选择 Ollama、LM Studio、环境变量配置的 OpenAI-compatible 运行时，并在 **设置 -> BYOK** 中填写自己的文本/图片 API Key、Base URL 和模型名称。
+也可以在 **设置 -> 模型与集成** 中选择 Ollama、LM Studio、环境变量配置的 OpenAI-compatible 运行时，并在 **设置 -> BYOK** 中分别填写文本和图片的 API Key、Base URL 和模型名称。
 
 ## Firecrawl 与发布链接反馈
 
