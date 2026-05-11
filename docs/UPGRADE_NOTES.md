@@ -1,8 +1,15 @@
 # Upgrade Notes
 
+## 2026-05-11 — BYOK Settings and Chrome Preview Layout
+
+- Added an uppercase **BYOK** section under **Settings -> Model and Integrations**.
+- Moved API key, base URL, and text model selection/name into the BYOK section.
+- Renamed the OpenAI-compatible user-key runtime surface to BYOK so users understand it as "Bring Your Own Key".
+- Updated the app shell and settings modal to use dynamic viewport height and top-safe layout rules, fixing Chrome preview cases where top content could be covered.
+
 ## 2026-05-11 — Generation Reliability Fix
 
-- Added request timeouts for real/custom model calls so unreachable model endpoints cannot freeze the content loop.
+- Added request timeouts for real/BYOK model calls so unreachable model endpoints cannot freeze the content loop.
 - Added automatic built-in fallback when the selected runtime fails.
 - Added a deterministic fallback planner so the loop can still produce a usable plan if the model does not return.
 - Added deterministic fallback Markdown drafts so publishing and article image generation remain testable even when model execution fails.
@@ -11,8 +18,8 @@
 ## 2026-05-11 — Runtime Settings Consolidation
 
 - Moved runtime selection from the floating bottom-right control into **Settings -> Model and Integrations**.
-- Added runtime foundation cards for built-in experience, environment-configured OpenAI-compatible models, Ollama, LM Studio, and custom OpenAI-compatible models.
-- Added a custom model flow where users can save API key, base URL, and model name, then use that configuration as the active runtime foundation.
+- Added runtime foundation cards for built-in experience, environment-configured OpenAI-compatible models, Ollama, LM Studio, and BYOK OpenAI-compatible models.
+- Added the BYOK model flow where users can save API key, base URL, and model name, then use that configuration as the active runtime foundation.
 - Removed the floating runtime dropdown from the main workspace.
 - Replaced user-facing demo wording with built-in experience/runtime wording.
 
@@ -54,9 +61,16 @@ This upgrade reshapes the right-side memory workspace around how an operator act
 
 # 升级说明
 
+## 2026-05-11 — BYOK 设置与 Chrome 预览布局
+
+- 在 **设置 -> 模型与集成** 中增加大写 **BYOK** 区块。
+- API Key、Base URL、文本模型选择/名称统一收拢到 BYOK 区块。
+- OpenAI-compatible 运行时在用户界面上统一改成 BYOK，表达为 Bring Your Own Key。
+- 应用外壳和设置悬浮窗改用动态视口高度与顶部安全布局，修复 Chrome 预览下顶部内容可能被遮挡的问题。
+
 ## 2026-05-11 — 生成链路稳定性修复
 
-- 给真实/自定义模型请求增加超时，避免模型地址不可达时卡住闭环。
+- 给真实/BYOK 模型请求增加超时，避免模型地址不可达时卡住闭环。
 - 选中的运行时失败时会自动回到内置体验生成。
 - 增加确定性的兜底规划器，模型不返回时仍能生成可用计划。
 - 增加确定性的 Markdown 草稿兜底，确保发布页和自动配图流程仍然可测试。
@@ -65,8 +79,8 @@ This upgrade reshapes the right-side memory workspace around how an operator act
 ## 2026-05-11 — 运行时设置整合
 
 - 把右下角悬浮运行时选择整合进 **设置 -> 模型与集成**。
-- 增加运行时底座卡片：内置体验、环境变量 OpenAI-compatible、Ollama、LM Studio、自定义 OpenAI-compatible。
-- 增加自定义模型流程，用户可以保存 API Key、Base URL 和模型名称，并直接把它设为当前运行时底座。
+- 增加运行时底座卡片：内置体验、环境变量 OpenAI-compatible、Ollama、LM Studio、BYOK OpenAI-compatible。
+- 增加 BYOK 模型流程，用户可以保存 API Key、Base URL 和模型名称，并直接把它设为当前运行时底座。
 - 移除主界面右下角的运行时下拉入口。
 - 用户界面不再显示 demo 字样，统一改为内置体验/运行时表述。
 

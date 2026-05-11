@@ -68,7 +68,7 @@ The app can run on several runtime foundations:
 - **Built-in experience runtime**: deterministic local responses for product walkthroughs without external credentials.
 - **Environment runtime**: OpenAI-compatible chat completion API through `.env.local`.
 - **Local runtime**: Ollama or LM Studio-style local servers.
-- **Custom runtime**: an OpenAI-compatible model added from Settings -> Model and Integrations.
+- **BYOK runtime**: an OpenAI-compatible model configured in Settings -> Model and Integrations with the user's own key, base URL, and model name.
 
 The runtime adapter is intentionally thin so the model provider can be replaced without changing the loop engine. Runtime selection is part of Settings rather than a floating control.
 
@@ -188,7 +188,7 @@ stateDiagram-v2
 - **内置体验运行时**：无需外部凭据，用确定性本地响应支撑产品走查。
 - **环境变量运行时**：通过 `.env.local` 接入 OpenAI-compatible chat completion API。
 - **本地运行时**：Ollama 或 LM Studio 这类本地服务。
-- **自定义运行时**：在设置里的“模型与集成”添加 OpenAI-compatible 模型。
+- **BYOK 运行时**：在设置里的“模型与集成”填写用户自己的 Key、Base URL 和模型名称，接入 OpenAI-compatible 模型。
 
 Runtime adapter 故意保持轻量，使模型服务可以替换，而不影响闭环引擎。运行时选择已经整合进设置，不再使用右下角悬浮控制。
 

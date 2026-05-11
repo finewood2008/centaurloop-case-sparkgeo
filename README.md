@@ -16,7 +16,7 @@ This repository is intentionally built as a complete product prototype rather th
 - **AI feedback crawling**: after publishing, the user pastes article links and the system reads public pages to analyze performance signals.
 - **Live memory workspace**: current-cycle signals, a wiki-style long-term memory graph, and the editable company profile stay visible beside the conversation.
 - **Workspace settings**: platform selection, UI/output language, writing style, CTA style, emoji level, image engine/model, and image style are configurable.
-- **Runtime flexibility**: supports a built-in experience runtime, OpenAI-compatible endpoints, Ollama, LM Studio-style local servers, and custom models from Settings.
+- **Runtime flexibility**: supports a built-in experience runtime, OpenAI-compatible endpoints, Ollama, LM Studio-style local servers, and BYOK models from Settings.
 
 ## Product Flow
 
@@ -46,7 +46,7 @@ flowchart LR
 | Publishing page | Lets users review generated content, copy it, and mark each item as published. |
 | Feedback form | Accepts published article URLs and runs AI-powered feedback extraction. |
 | Memory workspace | A right-side live panel ordered by current-cycle memory, all-memory wiki graph, then company profile editing and imports. |
-| Runtime settings | Lets users choose the underlying runtime foundation or add a custom OpenAI-compatible model. |
+| Runtime settings | Lets users choose the underlying runtime foundation or add a BYOK OpenAI-compatible model. |
 
 ## Architecture
 
@@ -138,7 +138,7 @@ SPARK_MODEL_API_KEY=your_key_here
 SPARK_MODEL_NAME=gpt-4o-mini
 ```
 
-You can also choose Ollama, LM Studio, environment-based OpenAI-compatible runtimes, or add a custom model inside the app settings panel.
+You can also choose Ollama, LM Studio, environment-based OpenAI-compatible runtimes, or configure BYOK inside **Settings -> Model and Integrations** with your own API key, base URL, and model name.
 
 ## Firecrawl and Published Link Feedback
 
@@ -194,7 +194,7 @@ SparkGEO 是 **CentaurLoop** 的第一个公开案例项目：一个人机协同
 - **文章配图辅助**：发布页可以根据文章和图片设置生成封面预览与图片提示词。
 - **实时记忆工作区**：本轮动态记忆、长期记忆 wiki 关系图、企业档案编辑和资料导入会常驻显示在对话右侧。
 - **工作台设置**：可配置发布平台、界面/输出语言、语言风格、CTA、Emoji、图片生成引擎/模型和图片风格。
-- **灵活运行时**：支持内置体验运行时、OpenAI-compatible 接口、Ollama、LM Studio 本地服务，以及设置里的自定义模型。
+- **灵活运行时**：支持内置体验运行时、OpenAI-compatible 接口、Ollama、LM Studio 本地服务，以及设置里的 BYOK 模型。
 
 ## 产品流程
 
@@ -224,7 +224,7 @@ flowchart LR
 | 文章发布页 | 检查生成内容、复制正文、逐篇标记发布。 |
 | 反馈表单 | 粘贴已发布文章 URL，由 AI 抓取并分析反馈。 |
 | 记忆工作区 | 常驻右侧，按本轮动态记忆、全部记忆 wiki 图谱、企业档案编辑与导入三个层级组织。 |
-| 运行时设置 | 在设置中选择底层模型运行时，或添加自定义 OpenAI-compatible 模型。 |
+| 运行时设置 | 在设置中选择底层模型运行时，或添加 BYOK OpenAI-compatible 模型。 |
 
 ## 架构
 
@@ -316,7 +316,7 @@ SPARK_MODEL_API_KEY=your_key_here
 SPARK_MODEL_NAME=gpt-4o-mini
 ```
 
-也可以在应用设置面板中选择 Ollama、LM Studio、环境变量配置的 OpenAI-compatible 运行时，或直接添加自定义模型。
+也可以在 **设置 -> 模型与集成** 中选择 Ollama、LM Studio、环境变量配置的 OpenAI-compatible 运行时，或在 BYOK 区块里填写自己的 API Key、Base URL 和模型名称。
 
 ## Firecrawl 与发布链接反馈
 

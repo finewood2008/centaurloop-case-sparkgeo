@@ -77,7 +77,7 @@ export const IMAGE_ENGINE_OPTIONS = [
   'Midjourney',
   'Ideogram',
   'Replicate',
-  '自定义 OpenAI-compatible',
+  'BYOK OpenAI-compatible',
 ];
 
 export const IMAGE_RATIO_OPTIONS = [

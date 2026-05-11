@@ -24,6 +24,18 @@ type Tab = 'workflow' | 'models' | 'image';
 
 const CUSTOM_RUNTIME_ID = 'user-settings';
 const RUNTIME_STORAGE_KEY = 'spark_geo_runtime_id';
+const BYOK_MODEL_OPTIONS = [
+  'gpt-4o-mini',
+  'gpt-4o',
+  'gpt-4.1-mini',
+  'gpt-4.1',
+  'gpt-4.1-nano',
+  'o4-mini',
+  'deepseek-chat',
+  'qwen-plus',
+  'glm-4.5',
+  'claude-sonnet-4-5',
+];
 
 function OptionButton({
   active,
@@ -50,7 +62,7 @@ function OptionButton({
 
 function runtimeDisplayLabel(connector: RuntimeConnector): string {
   if (connector.id === 'local-demo') return '内置体验运行时';
-  if (connector.id === CUSTOM_RUNTIME_ID) return '自定义 OpenAI-compatible 模型';
+  if (connector.id === CUSTOM_RUNTIME_ID) return 'BYOK OpenAI-compatible 模型';
   return connector.label;
 }
 
@@ -58,8 +70,8 @@ function runtimeDisplayMessage(connector: RuntimeConnector): string {
   if (connector.id === 'local-demo') return '无需密钥，用于首次体验和离线演示。';
   if (connector.id === CUSTOM_RUNTIME_ID) {
     return connector.available
-      ? '使用下方自定义模型配置作为底座。'
-      : '填写 API Key、Base URL 和模型名称后可启用。';
+      ? '使用下方 BYOK 配置作为模型底座。'
+      : '填写 API Key、Base URL 和模型名称后可启用 BYOK。';
   }
   return connector.message.replace(/\bdemo\b/gi, 'built-in');
 }
@@ -145,9 +157,9 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/30 px-4 py-4 sm:py-8" onClick={onClose}>
       <div
-        className="flex max-h-[88vh] w-full max-w-3xl flex-col rounded-2xl bg-white shadow-xl"
+        className="flex max-h-[calc(100dvh-2rem)] w-full max-w-3xl flex-col rounded-2xl bg-white shadow-xl sm:max-h-[calc(100dvh-4rem)]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-6 pt-6 pb-3">
@@ -277,7 +289,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <h3 className="text-sm font-semibold text-spark-text">底层运行时</h3>
-                    <p className="mt-1 text-sm text-spark-muted">选择 SparkGEO 调用的模型底座，或在下方添加自定义模型。</p>
+                    <p className="mt-1 text-sm text-spark-muted">选择 SparkGEO 调用的模型底座，或在下方配置 BYOK。</p>
                   </div>
                   <button
                     onClick={() => void runtime.rescan()}
@@ -334,38 +346,53 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                 </div>
               </section>
 
-              <div className="grid gap-6 md:grid-cols-2">
-              <section className="space-y-4">
-                <h3 className="text-sm font-semibold text-spark-text">自定义文本模型</h3>
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-spark-text">API Key</label>
-                  <input
-                    type="password"
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                    className="w-full rounded-xl border border-spark-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
-                    placeholder="sk-..."
-                  />
+              <section className="space-y-4 rounded-2xl border border-spark-border bg-[#FBFBF8] p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="text-sm font-semibold tracking-wide text-spark-text">BYOK</h3>
+                    <p className="mt-1 text-sm leading-6 text-spark-muted">
+                      Bring Your Own Key。把你自己的 OpenAI-compatible Key 和模型作为 SparkGEO 的底层运行时。
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-medium text-spark-muted">
+                    {runtime.selectedRuntimeId === CUSTOM_RUNTIME_ID ? '当前底座' : '可选底座'}
+                  </span>
                 </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-spark-text">模型名称</label>
-                  <input
-                    type="text"
-                    value={model}
-                    onChange={(e) => setModel(e.target.value)}
-                    className="w-full rounded-xl border border-spark-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
-                    placeholder="gpt-4o-mini"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-spark-text">Base URL</label>
-                  <input
-                    type="text"
-                    value={baseUrl}
-                    onChange={(e) => setBaseUrl(e.target.value)}
-                    className="w-full rounded-xl border border-spark-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
-                    placeholder="https://api.openai.com/v1"
-                  />
+                <div className="grid gap-4 md:grid-cols-3">
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-spark-text">API Key</label>
+                    <input
+                      type="password"
+                      value={apiKey}
+                      onChange={(e) => setApiKey(e.target.value)}
+                      className="w-full rounded-xl border border-spark-border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
+                      placeholder="sk-..."
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-spark-text">模型选择 / 名称</label>
+                    <input
+                      type="text"
+                      list="byok-model-options"
+                      value={model}
+                      onChange={(e) => setModel(e.target.value)}
+                      className="w-full rounded-xl border border-spark-border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
+                      placeholder="gpt-4o-mini"
+                    />
+                    <datalist id="byok-model-options">
+                      {BYOK_MODEL_OPTIONS.map((item) => <option key={item} value={item} />)}
+                    </datalist>
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-spark-text">Base URL</label>
+                    <input
+                      type="text"
+                      value={baseUrl}
+                      onChange={(e) => setBaseUrl(e.target.value)}
+                      className="w-full rounded-xl border border-spark-border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
+                      placeholder="https://api.openai.com/v1"
+                    />
+                  </div>
                 </div>
                 <button
                   onClick={() => void handleUseCustomModel()}
@@ -373,69 +400,70 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                   className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-spark px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-40"
                 >
                   <Cpu size={15} />
-                  保存并使用自定义模型
+                  保存并使用 BYOK 模型
                 </button>
                 <p className="text-xs leading-5 text-spark-muted">
-                  自定义模型会作为一个可选择的底座出现在上方运行时列表里。
+                  BYOK 模型会作为一个可选择的底座出现在上方运行时列表里；如果请求失败，系统会自动回到内置体验生成，避免流程卡住。
                 </p>
               </section>
 
-              <section className="space-y-4">
-                <h3 className="text-sm font-semibold text-spark-text">图片生成模型</h3>
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-spark-text">图片生成引擎</label>
-                  <select
-                    value={settings.imageEngine}
-                    onChange={(event) => updateSettings({ imageEngine: event.target.value })}
-                    className="w-full rounded-xl border border-spark-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
-                  >
-                    {IMAGE_ENGINE_OPTIONS.map((item) => <option key={item}>{item}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-spark-text">图片模型名称</label>
-                  <input
-                    type="text"
-                    value={settings.imageModel}
-                    onChange={(event) => updateSettings({ imageModel: event.target.value })}
-                    className="w-full rounded-xl border border-spark-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
-                    placeholder="gpt-image-2 / flux-pro / stable-diffusion-xl"
-                  />
-                </div>
-                <p className="text-sm leading-6 text-spark-muted">
-                  这里配置图片生成的供应商或兼容引擎；风格、比例和提示词要求放在“图片生成”页。
-                </p>
-              </section>
-
-              <section className="space-y-4">
-                <h3 className="text-sm font-semibold text-spark-text">网页抓取集成</h3>
-                <p className="text-sm leading-6 text-spark-muted">
-                  Firecrawl Key 用于在记忆板块抓取官网或资料页；没有配置时，系统会尝试使用基础网页读取。
-                </p>
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-spark-text">Firecrawl API Key</label>
-                  <input
-                    type="password"
-                    value={fcKey}
-                    onChange={(e) => setFcKey(e.target.value)}
-                    className="w-full rounded-xl border border-spark-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
-                    placeholder="fc-..."
-                  />
-                </div>
-                <button
-                  onClick={handleTestFc}
-                  disabled={fcTesting || !fcKey.trim()}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-spark-border px-4 py-2 text-sm text-spark-muted hover:bg-gray-50 disabled:opacity-40"
-                >
-                  {fcTesting ? <Loader2 size={14} className="animate-spin" /> : null}
-                  {fcTesting ? '测试中' : '测试 Firecrawl'}
-                </button>
-                {fcResult && (
-                  <p className={`text-sm ${fcResult.includes('成功') ? 'text-green-600' : 'text-red-500'}`}>
-                    {fcResult}
+              <div className="grid gap-6 md:grid-cols-2">
+                <section className="space-y-4">
+                  <h3 className="text-sm font-semibold text-spark-text">图片生成模型</h3>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-spark-text">图片生成引擎</label>
+                    <select
+                      value={settings.imageEngine}
+                      onChange={(event) => updateSettings({ imageEngine: event.target.value })}
+                      className="w-full rounded-xl border border-spark-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
+                    >
+                      {IMAGE_ENGINE_OPTIONS.map((item) => <option key={item}>{item}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-spark-text">图片模型名称</label>
+                    <input
+                      type="text"
+                      value={settings.imageModel}
+                      onChange={(event) => updateSettings({ imageModel: event.target.value })}
+                      className="w-full rounded-xl border border-spark-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
+                      placeholder="gpt-image-2 / flux-pro / stable-diffusion-xl"
+                    />
+                  </div>
+                  <p className="text-sm leading-6 text-spark-muted">
+                    这里配置图片生成的供应商或兼容引擎；风格、比例和提示词要求放在“图片生成”页。
                   </p>
-                )}
-              </section>
+                </section>
+
+                <section className="space-y-4">
+                  <h3 className="text-sm font-semibold text-spark-text">网页抓取集成</h3>
+                  <p className="text-sm leading-6 text-spark-muted">
+                    Firecrawl Key 用于在记忆板块抓取官网或资料页；没有配置时，系统会尝试使用基础网页读取。
+                  </p>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-spark-text">Firecrawl API Key</label>
+                    <input
+                      type="password"
+                      value={fcKey}
+                      onChange={(e) => setFcKey(e.target.value)}
+                      className="w-full rounded-xl border border-spark-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
+                      placeholder="fc-..."
+                    />
+                  </div>
+                  <button
+                    onClick={handleTestFc}
+                    disabled={fcTesting || !fcKey.trim()}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-spark-border px-4 py-2 text-sm text-spark-muted hover:bg-gray-50 disabled:opacity-40"
+                  >
+                    {fcTesting ? <Loader2 size={14} className="animate-spin" /> : null}
+                    {fcTesting ? '测试中' : '测试 Firecrawl'}
+                  </button>
+                  {fcResult && (
+                    <p className={`text-sm ${fcResult.includes('成功') ? 'text-green-600' : 'text-red-500'}`}>
+                      {fcResult}
+                    </p>
+                  )}
+                </section>
               </div>
             </div>
           )}

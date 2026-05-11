@@ -65,8 +65,8 @@ function userSettingsConnector(): RuntimeConnector {
   const config = readStoredUserModelConfig();
   return {
     id: CUSTOM_RUNTIME_ID,
-    label: 'Custom OpenAI-compatible model',
-    provider: 'custom-openai-compatible',
+    label: 'BYOK OpenAI-compatible model',
+    provider: 'byok-openai-compatible',
     endpoint: config?.baseUrl ?? 'https://api.openai.com/v1',
     model: config?.model ?? 'gpt-4o-mini',
     models: config ? [config.model] : [],
@@ -74,8 +74,8 @@ function userSettingsConnector(): RuntimeConnector {
     available: Boolean(config),
     kind: 'openai-compatible',
     message: config
-      ? 'Custom model from Settings is ready.'
-      : 'Add an API key, base URL, and model name to use a custom model.',
+      ? 'BYOK model from Settings is ready.'
+      : 'Add an API key, base URL, and model name in BYOK to use your own model.',
   };
 }
 
@@ -132,7 +132,7 @@ export async function connectRuntime(runtimeId: string): Promise<{ connector: Ru
   if (runtimeId === CUSTOM_RUNTIME_ID) {
     const connector = userSettingsConnector();
     if (!connector.available) {
-      throw new Error('Custom model is not configured.');
+      throw new Error('BYOK model is not configured.');
     }
     return {
       connector,

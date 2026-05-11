@@ -23,22 +23,24 @@ export function SparkShell() {
   }, []);
 
   return (
-    <div className="flex flex-col h-screen bg-[#FAFAF8]">
+    <div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-[#FAFAF8] pt-[env(safe-area-inset-top)]">
       {/* Header */}
-      <header className="flex items-center justify-between px-4 py-3 border-b border-spark-border bg-white/80 backdrop-blur-sm">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">🔥</span>
-          <span className="text-lg font-semibold text-spark-text">{t('app.title')}</span>
-          <span className="text-xs text-spark-muted hidden sm:inline">{t('app.tagline')}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowSettings(true)}
-            className="p-2 rounded-lg text-spark-muted hover:bg-gray-100 transition-colors"
-            title={t('settings.title')}
-          >
-            <Settings size={18} />
-          </button>
+      <header className="shrink-0 border-b border-spark-border bg-white/80 px-4 py-3 backdrop-blur-sm">
+        <div className="mx-auto flex w-full max-w-none items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">🔥</span>
+            <span className="text-lg font-semibold text-spark-text">{t('app.title')}</span>
+            <span className="text-xs text-spark-muted hidden sm:inline">{t('app.tagline')}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowSettings(true)}
+              className="p-2 rounded-lg text-spark-muted hover:bg-gray-100 transition-colors"
+              title={t('settings.title')}
+            >
+              <Settings size={18} />
+            </button>
+          </div>
         </div>
       </header>
 
