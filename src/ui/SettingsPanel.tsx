@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { Check, Cpu, Image, Loader2, RefreshCcw, Settings2, SlidersHorizontal, X } from 'lucide-react';
+import { Check, Cpu, Image, KeyRound, Loader2, RefreshCcw, Settings2, SlidersHorizontal, X } from 'lucide-react';
 import { useRuntimeStatus } from '../hooks/useRuntimeStatus';
 import { useI18n, type Locale } from '../i18n';
 import type { RuntimeConnector } from '../adapters/runtime';
@@ -20,7 +20,7 @@ interface SettingsPanelProps {
   onClose: () => void;
 }
 
-type Tab = 'workflow' | 'models' | 'image';
+type Tab = 'workflow' | 'models' | 'byok' | 'image';
 
 const CUSTOM_RUNTIME_ID = 'user-settings';
 const RUNTIME_STORAGE_KEY = 'spark_geo_runtime_id';
@@ -35,6 +35,14 @@ const BYOK_MODEL_OPTIONS = [
   'qwen-plus',
   'glm-4.5',
   'claude-sonnet-4-5',
+];
+const BYOK_IMAGE_MODEL_OPTIONS = [
+  'gpt-image-2',
+  'gpt-image-1',
+  'flux-pro',
+  'stable-diffusion-xl',
+  'ideogram-v3',
+  'imagen-4',
 ];
 
 function OptionButton({
@@ -70,15 +78,15 @@ function runtimeDisplayMessage(connector: RuntimeConnector): string {
   if (connector.id === 'local-demo') return '无需密钥，用于首次体验和离线演示。';
   if (connector.id === CUSTOM_RUNTIME_ID) {
     return connector.available
-      ? '使用下方 BYOK 配置作为模型底座。'
-      : '填写 API Key、Base URL 和模型名称后可启用 BYOK。';
+      ? '使用 BYOK 页的文本模型配置作为模型底座。'
+      : '在 BYOK 页填写 API Key、Base URL 和模型名称后可启用。';
   }
   return connector.message.replace(/\bdemo\b/gi, 'built-in');
 }
 
 function runtimeKindLabel(connector: RuntimeConnector): string {
   if (connector.id === 'local-demo') return '内置';
-  if (connector.id === CUSTOM_RUNTIME_ID) return '自定义';
+  if (connector.id === CUSTOM_RUNTIME_ID) return 'BYOK';
   if (connector.kind === 'ollama') return '本地';
   if (connector.kind === 'openai-compatible') return '兼容';
   return '规划中';
@@ -96,6 +104,8 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('spark_geo_api_key') ?? '');
   const [model, setModel] = useState(() => localStorage.getItem('spark_geo_model') ?? 'gpt-4o-mini');
   const [baseUrl, setBaseUrl] = useState(() => localStorage.getItem('spark_geo_base_url') ?? 'https://api.openai.com/v1');
+  const [imageApiKey, setImageApiKey] = useState(() => localStorage.getItem('spark_geo_image_api_key') ?? '');
+  const [imageBaseUrl, setImageBaseUrl] = useState(() => localStorage.getItem('spark_geo_image_base_url') ?? 'https://api.openai.com/v1');
   const [fcKey, setFcKey] = useState(() => localStorage.getItem('spark_geo_firecrawl_key') ?? '');
   const [fcTesting, setFcTesting] = useState(false);
   const [fcResult, setFcResult] = useState('');
@@ -109,6 +119,8 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
     localStorage.setItem('spark_geo_api_key', apiKey);
     localStorage.setItem('spark_geo_model', model);
     localStorage.setItem('spark_geo_base_url', baseUrl);
+    localStorage.setItem('spark_geo_image_api_key', imageApiKey);
+    localStorage.setItem('spark_geo_image_base_url', imageBaseUrl);
     localStorage.setItem('spark_geo_firecrawl_key', fcKey);
   };
 
@@ -153,6 +165,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
   const tabs: { id: Tab; label: string; icon: ReactNode }[] = [
     { id: 'workflow', label: '工作流偏好', icon: <SlidersHorizontal size={15} /> },
     { id: 'models', label: '模型与集成', icon: <Settings2 size={15} /> },
+    { id: 'byok', label: 'BYOK', icon: <KeyRound size={15} /> },
     { id: 'image', label: '图片生成', icon: <Image size={15} /> },
   ];
 
@@ -165,7 +178,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
         <div className="flex items-center justify-between px-6 pt-6 pb-3">
           <div>
             <h2 className="text-lg font-semibold text-spark-text">{t('settings.title')}</h2>
-            <p className="text-xs text-spark-muted">控制内容策略、模型运行时、配图模型和抓取集成</p>
+            <p className="text-xs text-spark-muted">控制内容策略、模型运行时、BYOK、配图偏好和抓取集成</p>
           </div>
           <button onClick={onClose} className="rounded-lg p-1.5 hover:bg-gray-100">
             <X size={20} />
@@ -289,7 +302,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <h3 className="text-sm font-semibold text-spark-text">底层运行时</h3>
-                    <p className="mt-1 text-sm text-spark-muted">选择 SparkGEO 调用的模型底座，或在下方配置 BYOK。</p>
+                    <p className="mt-1 text-sm text-spark-muted">选择 SparkGEO 调用的模型底座；BYOK 的 Key、文本模型和图片模型在 BYOK 页配置。</p>
                   </div>
                   <button
                     onClick={() => void runtime.rescan()}
@@ -346,12 +359,46 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                 </div>
               </section>
 
+              <section className="space-y-4">
+                <h3 className="text-sm font-semibold text-spark-text">网页抓取集成</h3>
+                <p className="text-sm leading-6 text-spark-muted">
+                  Firecrawl Key 用于在记忆板块抓取官网或资料页；没有配置时，系统会尝试使用基础网页读取。
+                </p>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-spark-text">Firecrawl API Key</label>
+                  <input
+                    type="password"
+                    value={fcKey}
+                    onChange={(e) => setFcKey(e.target.value)}
+                    className="w-full rounded-xl border border-spark-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
+                    placeholder="fc-..."
+                  />
+                </div>
+                <button
+                  onClick={handleTestFc}
+                  disabled={fcTesting || !fcKey.trim()}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-spark-border px-4 py-2 text-sm text-spark-muted hover:bg-gray-50 disabled:opacity-40"
+                >
+                  {fcTesting ? <Loader2 size={14} className="animate-spin" /> : null}
+                  {fcTesting ? '测试中' : '测试 Firecrawl'}
+                </button>
+                {fcResult && (
+                  <p className={`text-sm ${fcResult.includes('成功') ? 'text-green-600' : 'text-red-500'}`}>
+                    {fcResult}
+                  </p>
+                )}
+              </section>
+            </div>
+          )}
+
+          {tab === 'byok' && (
+            <div className="space-y-6">
               <section className="space-y-4 rounded-2xl border border-spark-border bg-[#FBFBF8] p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <h3 className="text-sm font-semibold tracking-wide text-spark-text">BYOK</h3>
+                    <h3 className="text-sm font-semibold tracking-wide text-spark-text">BYOK 文本生成</h3>
                     <p className="mt-1 text-sm leading-6 text-spark-muted">
-                      Bring Your Own Key。把你自己的 OpenAI-compatible Key 和模型作为 SparkGEO 的底层运行时。
+                      Bring Your Own Key。把你自己的 OpenAI-compatible Key 和文本模型作为 SparkGEO 的底层运行时。
                     </p>
                   </div>
                   <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-medium text-spark-muted">
@@ -370,7 +417,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-sm font-medium text-spark-text">模型选择 / 名称</label>
+                    <label className="mb-1 block text-sm font-medium text-spark-text">文本模型选择 / 名称</label>
                     <input
                       type="text"
                       list="byok-model-options"
@@ -400,16 +447,21 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                   className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-spark px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-40"
                 >
                   <Cpu size={15} />
-                  保存并使用 BYOK 模型
+                  保存并使用 BYOK 文本模型
                 </button>
                 <p className="text-xs leading-5 text-spark-muted">
-                  BYOK 模型会作为一个可选择的底座出现在上方运行时列表里；如果请求失败，系统会自动回到内置体验生成，避免流程卡住。
+                  BYOK 文本模型会作为一个可选择的底座出现在“模型与集成”的运行时列表里；如果请求失败，系统会自动回到内置体验生成，避免流程卡住。
                 </p>
               </section>
 
-              <div className="grid gap-6 md:grid-cols-2">
-                <section className="space-y-4">
-                  <h3 className="text-sm font-semibold text-spark-text">图片生成模型</h3>
+              <section className="space-y-4 rounded-2xl border border-spark-border bg-white p-4">
+                <div>
+                  <h3 className="text-sm font-semibold tracking-wide text-spark-text">BYOK 图片生成</h3>
+                  <p className="mt-1 text-sm leading-6 text-spark-muted">
+                    图片生成也采用 BYOK。这里保存图片供应商、Key、Base URL 和模型名称；当前发布页会读取供应商和模型用于预览与提示词。
+                  </p>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
                   <div>
                     <label className="mb-1 block text-sm font-medium text-spark-text">图片生成引擎</label>
                     <select
@@ -421,50 +473,51 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                     </select>
                   </div>
                   <div>
-                    <label className="mb-1 block text-sm font-medium text-spark-text">图片模型名称</label>
+                    <label className="mb-1 block text-sm font-medium text-spark-text">图片模型选择 / 名称</label>
                     <input
                       type="text"
+                      list="byok-image-model-options"
                       value={settings.imageModel}
                       onChange={(event) => updateSettings({ imageModel: event.target.value })}
                       className="w-full rounded-xl border border-spark-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
                       placeholder="gpt-image-2 / flux-pro / stable-diffusion-xl"
                     />
+                    <datalist id="byok-image-model-options">
+                      {BYOK_IMAGE_MODEL_OPTIONS.map((item) => <option key={item} value={item} />)}
+                    </datalist>
                   </div>
-                  <p className="text-sm leading-6 text-spark-muted">
-                    这里配置图片生成的供应商或兼容引擎；风格、比例和提示词要求放在“图片生成”页。
-                  </p>
-                </section>
-
-                <section className="space-y-4">
-                  <h3 className="text-sm font-semibold text-spark-text">网页抓取集成</h3>
-                  <p className="text-sm leading-6 text-spark-muted">
-                    Firecrawl Key 用于在记忆板块抓取官网或资料页；没有配置时，系统会尝试使用基础网页读取。
-                  </p>
                   <div>
-                    <label className="mb-1 block text-sm font-medium text-spark-text">Firecrawl API Key</label>
+                    <label className="mb-1 block text-sm font-medium text-spark-text">图片 API Key</label>
                     <input
                       type="password"
-                      value={fcKey}
-                      onChange={(e) => setFcKey(e.target.value)}
+                      value={imageApiKey}
+                      onChange={(e) => setImageApiKey(e.target.value)}
                       className="w-full rounded-xl border border-spark-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
-                      placeholder="fc-..."
+                      placeholder="sk- / provider key"
                     />
                   </div>
-                  <button
-                    onClick={handleTestFc}
-                    disabled={fcTesting || !fcKey.trim()}
-                    className="inline-flex items-center gap-1.5 rounded-xl border border-spark-border px-4 py-2 text-sm text-spark-muted hover:bg-gray-50 disabled:opacity-40"
-                  >
-                    {fcTesting ? <Loader2 size={14} className="animate-spin" /> : null}
-                    {fcTesting ? '测试中' : '测试 Firecrawl'}
-                  </button>
-                  {fcResult && (
-                    <p className={`text-sm ${fcResult.includes('成功') ? 'text-green-600' : 'text-red-500'}`}>
-                      {fcResult}
-                    </p>
-                  )}
-                </section>
-              </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-spark-text">图片 Base URL</label>
+                    <input
+                      type="text"
+                      value={imageBaseUrl}
+                      onChange={(e) => setImageBaseUrl(e.target.value)}
+                      className="w-full rounded-xl border border-spark-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-spark/30"
+                      placeholder="https://api.openai.com/v1"
+                    />
+                  </div>
+                </div>
+                <button
+                  onClick={() => void handleSaveModel()}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-spark-border px-4 py-2 text-sm font-medium text-spark-text hover:bg-gray-50"
+                >
+                  <Image size={15} />
+                  保存 BYOK 图片生成设置
+                </button>
+                <p className="text-xs leading-5 text-spark-muted">
+                  当前版本的发布页先生成本地封面预览和可复制图片提示词；真实图片 API 接入时会读取这组 BYOK 配置。
+                </p>
+              </section>
             </div>
           )}
 
@@ -503,14 +556,14 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                 />
               </div>
               <div className="rounded-xl bg-gray-50 p-3 text-sm leading-6 text-spark-muted">
-                当前版本会在文章发布页生成可预览的封面图和图片提示词；图片生成引擎和模型名称请在“模型与集成”里配置。
+                当前版本会在文章发布页生成可预览的封面图和图片提示词；图片生成引擎、模型和 Key 请在“BYOK”页配置。
               </div>
             </div>
           )}
         </div>
 
         <div className="flex items-center justify-between border-t border-spark-border px-6 py-4">
-          <span className="text-xs text-spark-muted">{saved ? '已保存' : '设置会即时生效，模型密钥需要点击保存'}</span>
+          <span className="text-xs text-spark-muted">{saved ? '已保存' : '设置会即时生效，BYOK 密钥需要点击保存'}</span>
           <button
             onClick={() => void handleSaveModel()}
             className="rounded-xl bg-spark px-5 py-2 text-sm font-medium text-white hover:bg-orange-600"

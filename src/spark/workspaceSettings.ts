@@ -71,13 +71,13 @@ export const IMAGE_STYLE_OPTIONS = [
 ];
 
 export const IMAGE_ENGINE_OPTIONS = [
+  'BYOK OpenAI-compatible',
   'OpenAI Images',
   'Flux / Black Forest Labs',
   'Stable Diffusion',
   'Midjourney',
   'Ideogram',
   'Replicate',
-  'BYOK OpenAI-compatible',
 ];
 
 export const IMAGE_RATIO_OPTIONS = [
@@ -94,7 +94,7 @@ export const DEFAULT_WORKSPACE_SETTINGS: WorkspaceSettings = {
   contentDepth: '标准深度',
   ctaStyle: '自然关注',
   emojiLevel: '适中',
-  imageEngine: 'OpenAI Images',
+  imageEngine: 'BYOK OpenAI-compatible',
   imageModel: 'gpt-image-2',
   imageStyle: '现代科技',
   imageRatio: '4:3',

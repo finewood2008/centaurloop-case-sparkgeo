@@ -1,5 +1,13 @@
 # Upgrade Notes
 
+## 2026-05-11 — Dedicated BYOK Tab and Image BYOK
+
+- Added **BYOK** as its own Settings tab.
+- Moved text-generation API key, base URL, and model selection from Model and Integrations into the dedicated BYOK tab.
+- Moved image-generation engine/model settings into the BYOK tab and added image API key plus image Base URL fields.
+- Kept image style, aspect ratio, and prompt preferences in **Settings -> Image Generation**.
+- Model and Integrations now focuses on runtime foundation selection and Firecrawl integration.
+
 ## 2026-05-11 — BYOK Settings and Chrome Preview Layout
 
 - Added an uppercase **BYOK** section under **Settings -> Model and Integrations**.
@@ -60,6 +68,14 @@ This upgrade reshapes the right-side memory workspace around how an operator act
 ---
 
 # 升级说明
+
+## 2026-05-11 — 独立 BYOK 标签页与图片 BYOK
+
+- 在设置中把 **BYOK** 拆成独立标签页。
+- 文本生成的 API Key、Base URL 和模型选择从“模型与集成”迁移到独立 BYOK 标签页。
+- 图片生成的引擎/模型设置也迁移到 BYOK 标签页，并增加图片 API Key 与图片 Base URL 字段。
+- 图片风格、比例和提示词偏好继续保留在 **设置 -> 图片生成**。
+- “模型与集成”现在聚焦底层运行时选择和 Firecrawl 集成。
 
 ## 2026-05-11 — BYOK 设置与 Chrome 预览布局
 
