@@ -4,7 +4,7 @@ This roadmap describes the intended path from case prototype to production-ready
 
 ## Phase 1: Case Prototype
 
-Status: complete enough for local demonstration.
+Status: complete for the `v0.2.0` public handoff release.
 
 - Content growth loop configuration
 - Brand memory onboarding
@@ -13,6 +13,8 @@ Status: complete enough for local demonstration.
 - Manual publishing workspace
 - Published URL feedback analysis
 - Cycle review and memory confirmation
+- Live memory workspace with current-cycle, all-memory, and company-profile views
+- Settings model with runtime selection and separate BYOK text/image credentials
 - Built-in experience runtime and OpenAI-compatible runtime adapter
 
 ## Phase 2: Backend Foundation
@@ -56,7 +58,7 @@ Status: complete enough for local demonstration.
 
 ## 阶段 1：案例原型
 
-状态：已经足够支撑本地演示。
+状态：已经完成 `v0.2.0` 公开交接版本。
 
 - 内容增长闭环配置
 - 品牌记忆启动引导
@@ -65,6 +67,8 @@ Status: complete enough for local demonstration.
 - 人工发布工作台
 - 发布 URL 反馈分析
 - 周期复盘和记忆确认
+- 实时记忆工作区，包含本轮、全部记忆和企业档案
+- 设置模型，包含运行时选择和独立 BYOK 文本/图片凭据
 - 内置体验运行时与 OpenAI-compatible runtime adapter
 
 ## 阶段 2：后端基础

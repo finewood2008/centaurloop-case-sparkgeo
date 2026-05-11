@@ -1,5 +1,14 @@
 # Upgrade Notes
 
+## 2026-05-11 — v0.2.0 Handoff Release
+
+This release marks SparkGEO as a stable CentaurLoop case prototype that another engineer or agent can continue from.
+
+- Bumped the package version to `0.2.0`.
+- Added `docs/HANDOVER.md` as the canonical continuation guide for future agents.
+- Updated README status, release notes, and public documentation links for the handoff release.
+- Consolidated the current product story around the full content loop, manual publishing workspace, published-link feedback, live memory workspace, and independent BYOK text/image credentials.
+
 ## 2026-05-11 — Dedicated BYOK Tab and Image BYOK
 
 - Added **BYOK** as its own Settings tab.
@@ -71,6 +80,15 @@ This upgrade reshapes the right-side memory workspace around how an operator act
 ---
 
 # 升级说明
+
+## 2026-05-11 — v0.2.0 交接版本
+
+这个版本把 SparkGEO 标记为一个稳定的 CentaurLoop 案例原型，方便其他工程师或 agent 继续接手开发。
+
+- 将 package 版本提升到 `0.2.0`。
+- 新增 `docs/HANDOVER.md`，作为后续 agent 接手的主交接文档。
+- 更新 README 状态、升级说明和公开文档入口。
+- 当前产品叙事收敛到完整内容闭环、人工发布工作台、发布链接反馈、实时记忆工作区，以及独立的 BYOK 文本/图片凭据。
 
 ## 2026-05-11 — 独立 BYOK 标签页与图片 BYOK
 

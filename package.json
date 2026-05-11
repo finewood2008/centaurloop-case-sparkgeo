@@ -1,7 +1,7 @@
 {
   "name": "centaurloop-case-sparkgeo",
   "private": false,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "SparkGEO is the first public CentaurLoop case project: an AI-assisted content growth loop with human review, publishing, feedback crawling, and memory.",
   "license": "MIT",
   "repository": {

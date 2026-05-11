@@ -6,6 +6,10 @@ SparkGEO is the first public case project for **CentaurLoop**: a human-in-the-lo
 
 This repository is intentionally built as a complete product prototype rather than a toy demo. It shows how a domain-specific AI employee can coordinate with a human operator across a full business cycle.
 
+**Current release:** `v0.2.0`
+
+**Agent handover:** [docs/HANDOVER.md](docs/HANDOVER.md)
+
 ## What SparkGEO Demonstrates
 
 - **CentaurLoop workflow model**: AI work phases, human gates, reminders, publishing, feedback, review, and memory.
@@ -74,6 +78,8 @@ Key design boundary:
 More detail is available in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 Upgrade notes are tracked in [docs/UPGRADE_NOTES.md](docs/UPGRADE_NOTES.md).
+
+For the fastest continuation path, start with [docs/HANDOVER.md](docs/HANDOVER.md). It summarizes current product behavior, local storage contracts, validation commands, and the next likely development tasks.
 
 ## Tech Stack
 
@@ -152,7 +158,9 @@ The app does not automate publishing to third-party platforms. It intentionally 
 
 ## Current Status
 
-This is a polished case prototype for the CentaurLoop pattern. It is suitable for local demos, product exploration, and architecture discussion.
+`v0.2.0` is a polished case prototype for the CentaurLoop pattern. It is suitable for local demos, product exploration, and architecture discussion.
+
+This release stabilizes the SparkGEO content loop, publishing workspace, live memory panel, published-link feedback flow, and the Settings model around runtime selection plus separate BYOK text/image credentials.
 
 Production hardening still requires:
 
@@ -183,6 +191,10 @@ MIT License. See [LICENSE](LICENSE).
 SparkGEO 是 **CentaurLoop** 的第一个公开案例项目：一个人机协同的 AI 内容增长闭环。它会规划内容、等待人工确认、生成可发布草稿、进入人工发布工作台、通过发布链接抓取反馈，并把复盘结果沉淀为下一轮可复用的记忆。
 
 这个仓库不是玩具 demo，而是一个完整产品原型。它展示了一个面向具体业务场景的 AI employee 如何和人类操作者一起跑完一个业务周期。
+
+**当前版本：** `v0.2.0`
+
+**Agent 交接文档：** [docs/HANDOVER.md](docs/HANDOVER.md)
 
 ## SparkGEO 展示了什么
 
@@ -253,6 +265,8 @@ src/
 更多说明见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
 
 升级说明见 [docs/UPGRADE_NOTES.md](docs/UPGRADE_NOTES.md)。
+
+如果要让其他 agent 接手继续开发，请先读 [docs/HANDOVER.md](docs/HANDOVER.md)。那里汇总了当前产品行为、localStorage 契约、验证命令和下一步开发任务。
 
 ## 技术栈
 
@@ -331,7 +345,9 @@ SPARK_MODEL_NAME=gpt-4o-mini
 
 ## 当前状态
 
-这是一个打磨过的 CentaurLoop 案例原型，适合本地演示、产品探索和架构讨论。
+`v0.2.0` 是一个打磨过的 CentaurLoop 案例原型，适合本地演示、产品探索和架构讨论。
+
+这个版本已经稳定了 SparkGEO 内容闭环、文章发布页、实时记忆板、发布链接反馈流程，以及由运行时选择和独立 BYOK 文本/图片凭据组成的设置模型。
 
 生产化仍需要：
 
